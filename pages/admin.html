@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Admin panel — manage users, approve employers, and review opportunities on Intambwe Skills Hub.">
+  <title>Admin Panel — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="container">
+      <div class="flex-between flex-wrap gap-2">
+        <div>
+          <h1>Admin Panel</h1>
+          <p>Manage users, approve employers, and review opportunity postings</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button class="btn btn-ghost btn-sm" onclick="resetSeedData()">
+            <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Reset Demo Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Stats Row -->
+    <div class="grid-4 mb-4">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-users">0</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-students">0</div>
+        <div class="stat-label">Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-employers">0</div>
+        <div class="stat-label">Employers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-pending">0</div>
+        <div class="stat-label">Pending Approvals</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('users')">
+        <i data-lucide="users" style="width:16px;height:16px"></i> Users
+      </button>
+      <button class="admin-tab" onclick="switchTab('opportunities')">
+        <i data-lucide="briefcase" style="width:16px;height:16px"></i> Opportunities
+      </button>
+      <button class="admin-tab" onclick="switchTab('overview')">
+        <i data-lucide="bar-chart-2" style="width:16px;height:16px"></i> Overview
+      </button>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="tab-users">
+      <div class="card card-elevated">
+        <div class="flex-between mb-3">
+          <div class="fw-semi">All Registered Users</div>
+          <div class="flex gap-2">
+            <select id="role-filter" class="form-select" style="padding:0.4rem 0.75rem;font-size:0.82rem" onchange="loadUsers()">
+              <option value="">All Roles</option>
+              <option value="student">Students</option>
+              <option value="employer">Employers</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table" id="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Details</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opportunities Tab -->
+    <div id="tab-opportunities" style="display:none">
+      <div class="card card-elevated">
+        <div class="flex-between mb-3">
+          <div class="fw-semi">All Opportunities</div>
+          <div class="flex gap-2">
+            <select id="opp-status-filter" class="form-select" style="padding:0.4rem 0.75rem;font-size:0.82rem" onchange="loadOpportunities()">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="active">Active</option>
+              <option value="rejected">Rejected</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table" id="opps-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Deadline</th>
+                <th>Status</th>
+                <th>Applicants</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="opps-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="tab-overview" style="display:none">
+      <div class="grid-2 gap-4 mb-4">
+        <!-- Platform Summary -->
+        <div class="card card-elevated">
+          <div class="section-title"><i data-lucide="activity" style="width:18px;height:18px;color:var(--clr-primary)"></i> Platform Summary</div>
+          <div id="platform-summary"></div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card card-elevated">
+          <div class="section-title"><i data-lucide="clock" style="width:18px;height:18px;color:var(--clr-primary)"></i> Recent Registrations</div>
+          <div id="recent-activity"></div>
+        </div>
+      </div>
+
+      <!-- Course Performance -->
+      <div class="card card-elevated mb-4">
+        <div class="section-title"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--clr-primary)"></i> Course Performance</div>
+        <div style="overflow-x:auto">
+          <table class="admin-table" id="course-performance-table">
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Category</th>
+                <th>Quiz Attempts</th>
+                <th>Pass Rate</th>
+                <th>Badges Earned</th>
+              </tr>
+            </thead>
+            <tbody id="course-perf-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script src="../js/courses-data.js"></script>
+<script>
+  const user = ISH.requireAuth(['admin']);
+  if (!user) throw new Error('Not authenticated');
+
+  renderNav('admin');
+
+  let currentTab = 'users';
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.admin-tab').forEach((t, i) => {
+      const tabs = ['users', 'opportunities', 'overview'];
+      t.classList.toggle('active', tabs[i] === tab);
+    });
+    document.getElementById('tab-users').style.display = tab === 'users' ? '' : 'none';
+    document.getElementById('tab-opportunities').style.display = tab === 'opportunities' ? '' : 'none';
+    document.getElementById('tab-overview').style.display = tab === 'overview' ? '' : 'none';
+
+    if (tab === 'users') loadUsers();
+    else if (tab === 'opportunities') loadOpportunities();
+    else if (tab === 'overview') loadOverview();
+  }
+
+  function loadStats() {
+    const users = ISH.getUsers();
+    const students = users.filter(u => u.role === 'student');
+    const employers = users.filter(u => u.role === 'employer');
+    const pendingEmployers = employers.filter(e => !e.approved);
+    const pendingOpps = ISH.getOpportunities({}).filter(o => o.status === 'pending');
+
+    document.getElementById('stat-users').textContent = users.length;
+    document.getElementById('stat-students').textContent = students.length;
+    document.getElementById('stat-employers').textContent = employers.length;
+    document.getElementById('stat-pending').textContent = pendingEmployers.length + pendingOpps.length;
+  }
+
+  function loadUsers() {
+    const roleFilter = document.getElementById('role-filter').value;
+    let users = ISH.getUsers();
+    if (roleFilter) users = users.filter(u => u.role === roleFilter);
+
+    const tbody = document.getElementById('users-tbody');
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted" style="padding:2rem">No users found</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users.map(u => {
+      const roleBadge = u.role === 'student' ? 'tag-green' : u.role === 'employer' ? 'tag-blue' : 'tag-red';
+      const statusClass = u.approved ? 'status-active' : 'status-pending';
+      const statusText = u.approved ? 'Approved' : 'Pending';
+      const details = u.role === 'student'
+        ? `${u.university || '—'} · ${u.field || '—'}`
+        : u.role === 'employer'
+        ? `${u.company || '—'} · ${u.sector || '—'}`
+        : 'System Administrator';
+      const joined = new Date(u.createdAt).toLocaleDateString('en-RW', { year: 'numeric', month: 'short', day: 'numeric' });
+
+      let actions = '';
+      if (u.role === 'employer' && !u.approved) {
+        actions = `
+          <button class="btn btn-primary btn-sm" onclick="approveUser('${u.id}')">Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectUser('${u.id}')">Reject</button>
+        `;
+      } else if (u.role !== 'admin') {
+        actions = `<span class="text-sm text-muted">—</span>`;
+      } else {
+        actions = `<span class="tag tag-red" style="font-size:0.65rem">Admin</span>`;
+      }
+
+      return `
+        <tr>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="nav-avatar" style="width:32px;height:32px;font-size:0.8rem">${u.name.charAt(0).toUpperCase()}</div>
+              <span class="fw-semi">${u.name}</span>
+            </div>
+          </td>
+          <td class="text-sm">${u.email}</td>
+          <td><span class="tag ${roleBadge}">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span></td>
+          <td class="text-sm text-muted">${details}</td>
+          <td><span class="opp-status-badge ${statusClass}">${statusText}</span></td>
+          <td class="text-sm text-muted">${joined}</td>
+          <td><div class="flex gap-1">${actions}</div></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function approveUser(id) {
+    ISH.updateUser(id, { approved: true });
+    ISH.toast('Employer approved successfully!');
+    loadStats();
+    loadUsers();
+  }
+
+  function rejectUser(id) {
+    if (!confirm('Are you sure you want to reject this employer?')) return;
+    // Remove the user
+    const users = ISH.getUsers();
+    const idx = users.findIndex(u => u.id === id);
+    if (idx >= 0) {
+      users.splice(idx, 1);
+      localStorage.setItem('ish_users', JSON.stringify(users));
+      ISH.toast('Employer rejected and removed.', 'info');
+      loadStats();
+      loadUsers();
+    }
+  }
+
+  function loadOpportunities() {
+    const statusFilter = document.getElementById('opp-status-filter').value;
+    let opps = ISH.getOpportunities({});
+    if (statusFilter) opps = opps.filter(o => o.status === statusFilter);
+
+    const allApps = ISH.getApplications({});
+    const tbody = document.getElementById('opps-tbody');
+
+    if (opps.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">No opportunities found</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = opps.map(o => {
+      const appCount = allApps.filter(a => a.opportunityId === o.id).length;
+      const statusClass = o.status === 'active' ? 'status-active' : o.status === 'pending' ? 'status-pending' : o.status === 'rejected' ? 'status-rejected' : 'status-closed';
+      const deadline = new Date(o.deadline).toLocaleDateString('en-RW', { year: 'numeric', month: 'short', day: 'numeric' });
+      const typeClass = o.type === 'Full-time' ? 'tag-green' : o.type === 'Internship' ? 'tag-blue' : o.type === 'Part-time' ? 'tag-gold' : 'tag-purple';
+
+      let actions = '';
+      if (o.status === 'pending') {
+        actions = `
+          <button class="btn btn-primary btn-sm" onclick="approveOpp('${o.id}')">Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectOpp('${o.id}')">Reject</button>
+        `;
+      } else if (o.status === 'active') {
+        actions = `<button class="btn btn-danger btn-sm" onclick="rejectOpp('${o.id}')">Remove</button>`;
+      } else {
+        actions = `<span class="text-sm text-muted">—</span>`;
+      }
+
+      return `
+        <tr>
+          <td class="fw-semi">${o.title}</td>
+          <td class="text-sm">${o.company}</td>
+          <td><span class="tag ${typeClass}">${o.type}</span></td>
+          <td><span class="tag tag-green">${o.category}</span></td>
+          <td class="text-sm text-muted">${deadline}</td>
+          <td><span class="opp-status-badge ${statusClass}">${o.status.charAt(0).toUpperCase() + o.status.slice(1)}</span></td>
+          <td class="text-sm">${appCount}</td>
+          <td><div class="flex gap-1">${actions}</div></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function approveOpp(id) {
+    ISH.approveOpportunity(id);
+    ISH.toast('Opportunity approved and now live!');
+    loadStats();
+    loadOpportunities();
+  }
+
+  function rejectOpp(id) {
+    ISH.rejectOpportunity(id);
+    ISH.toast('Opportunity rejected.', 'info');
+    loadStats();
+    loadOpportunities();
+  }
+
+  function loadOverview() {
+    const users = ISH.getUsers();
+    const students = users.filter(u => u.role === 'student');
+    const employers = users.filter(u => u.role === 'employer');
+    const opps = ISH.getOpportunities({});
+    const apps = ISH.getApplications({});
+    const allResults = JSON.parse(localStorage.getItem('ish_quiz_results') || '[]');
+    const allBadges = JSON.parse(localStorage.getItem('ish_badges') || '[]');
+
+    // Platform Summary
+    document.getElementById('platform-summary').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:0.75rem">
+        <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+          <span class="text-sm text-muted">Total Students</span>
+          <span class="fw-semi">${students.length}</span>
+        </div>
+        <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+          <span class="text-sm text-muted">Total Employers</span>
+          <span class="fw-semi">${employers.length}</span>
+        </div>
+        <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+          <span class="text-sm text-muted">Active Opportunities</span>
+          <span class="fw-semi">${opps.filter(o => o.status === 'active').length}</span>
+        </div>
+        <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+          <span class="text-sm text-muted">Total Applications</span>
+          <span class="fw-semi">${apps.length}</span>
+        </div>
+        <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+          <span class="text-sm text-muted">Quiz Attempts</span>
+          <span class="fw-semi">${allResults.length}</span>
+        </div>
+        <div class="flex-between" style="padding:0.6rem 0">
+          <span class="text-sm text-muted">Badges Awarded</span>
+          <span class="fw-semi">${allBadges.length}</span>
+        </div>
+      </div>
+    `;
+
+    // Recent Activity
+    const recent = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+    document.getElementById('recent-activity').innerHTML = recent.map(u => {
+      const roleBadge = u.role === 'student' ? 'tag-green' : u.role === 'employer' ? 'tag-blue' : 'tag-red';
+      const date = new Date(u.createdAt).toLocaleDateString('en-RW', { month: 'short', day: 'numeric' });
+      return `
+        <div class="flex items-center gap-2" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.06)">
+          <div class="nav-avatar" style="width:32px;height:32px;font-size:0.8rem">${u.name.charAt(0)}</div>
+          <div style="flex:1">
+            <div class="text-sm fw-semi">${u.name}</div>
+            <div class="text-xs text-muted">${u.email}</div>
+          </div>
+          <span class="tag ${roleBadge}" style="font-size:0.65rem">${u.role}</span>
+          <span class="text-xs text-muted">${date}</span>
+        </div>
+      `;
+    }).join('');
+
+    // Course Performance
+    const perfBody = document.getElementById('course-perf-tbody');
+    perfBody.innerHTML = COURSES.map(c => {
+      const attempts = allResults.filter(r => r.courseId === c.id);
+      const passed = attempts.filter(r => r.passed);
+      const badges = allBadges.filter(b => b.courseId === c.id);
+      const passRate = attempts.length > 0 ? Math.round((passed.length / attempts.length) * 100) : 0;
+
+      return `
+        <tr>
+          <td>
+            <div class="flex items-center gap-2">
+              ${renderCourseIcon(c.icon, '20')}
+              <span class="fw-semi text-sm">${c.title}</span>
+            </div>
+          </td>
+          <td><span class="tag ${c.tagColor}">${c.category}</span></td>
+          <td class="text-sm">${attempts.length}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="progress-bar-wrap" style="width:60px;height:6px">
+                <div class="progress-bar-fill" style="width:${passRate}%"></div>
+              </div>
+              <span class="text-sm">${passRate}%</span>
+            </div>
+          </td>
+          <td class="text-sm">${badges.length}</td>
+        </tr>
+      `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  function resetSeedData() {
+    if (!confirm('This will reset all demo data to defaults. Are you sure?')) return;
+    localStorage.removeItem('ish_seeded');
+    localStorage.removeItem('ish_users');
+    localStorage.removeItem('ish_quiz_results');
+    localStorage.removeItem('ish_badges');
+    localStorage.removeItem('ish_opportunities');
+    localStorage.removeItem('ish_applications');
+    ISH.initialize();
+    // Re-login as admin
+    ISH.setCurrentUser('admin_1');
+    ISH.toast('Demo data has been reset!', 'info');
+    loadStats();
+    loadUsers();
+  }
+
+  // Initial load
+  loadStats();
+  loadUsers();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>

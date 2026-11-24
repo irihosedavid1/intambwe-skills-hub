@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manage your employer profile on Intambwe Skills Hub.">
+  <title>Company Profile — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="container">
+      <div class="flex-between flex-wrap gap-2">
+        <div>
+          <h1 id="profile-company">Company Profile</h1>
+          <p>Manage your company information and account status</p>
+        </div>
+        <button class="btn btn-outline btn-sm" id="edit-toggle-btn" onclick="toggleEdit()">
+          <i data-lucide="edit-3" style="width:14px;height:14px"></i> Edit Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Account Status Banner -->
+    <div id="status-banner" class="card card-elevated mb-4" style="border-left:4px solid var(--clr-success)">
+      <div class="flex items-center gap-2">
+        <i data-lucide="check-circle" style="width:20px;height:20px;color:var(--clr-success)"></i>
+        <div>
+          <div class="fw-semi text-sm">Account Approved</div>
+          <div class="text-xs text-muted">Your employer account has been verified by our admin team</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-4 mb-4">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-postings">0</div>
+        <div class="stat-label">Total Postings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-active">0</div>
+        <div class="stat-label">Active Listings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-pending">0</div>
+        <div class="stat-label">Pending Approval</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-applicants">0</div>
+        <div class="stat-label">Total Applicants</div>
+      </div>
+    </div>
+
+    <div class="grid-2 gap-4 mb-4">
+      <!-- Profile Info Card -->
+      <div class="card card-elevated">
+        <div class="section-title"><i data-lucide="building-2" style="width:18px;height:18px;color:var(--clr-primary)"></i> Company Information</div>
+
+        <!-- View Mode -->
+        <div id="view-mode">
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+              <span class="text-sm text-muted">Company Name</span>
+              <span class="fw-semi" id="view-company">—</span>
+            </div>
+            <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+              <span class="text-sm text-muted">Contact Person</span>
+              <span class="fw-semi" id="view-name">—</span>
+            </div>
+            <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+              <span class="text-sm text-muted">Email Address</span>
+              <span class="fw-semi" id="view-email">—</span>
+            </div>
+            <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+              <span class="text-sm text-muted">Industry Sector</span>
+              <span class="fw-semi" id="view-sector">—</span>
+            </div>
+            <div class="flex-between" style="padding:0.6rem 0">
+              <span class="text-sm text-muted">Account Status</span>
+              <span class="opp-status-badge status-active" id="view-status">Approved</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Mode -->
+        <div id="edit-mode" class="hidden">
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input type="text" id="edit-company" class="form-input" placeholder="Your company name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Person</label>
+            <input type="text" id="edit-name" class="form-input" placeholder="Your full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Industry Sector</label>
+            <select id="edit-sector" class="form-select">
+              <option value="">Select sector...</option>
+              <option>Information Technology</option>
+              <option>Finance & Banking</option>
+              <option>Education</option>
+              <option>Healthcare</option>
+              <option>Agriculture</option>
+              <option>Retail & E-commerce</option>
+              <option>Tourism & Hospitality</option>
+              <option>Manufacturing</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary btn-sm" onclick="saveProfile()">Save Changes</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Details -->
+      <div class="card card-elevated">
+        <div class="section-title"><i data-lucide="shield-check" style="width:18px;height:18px;color:var(--clr-primary)"></i> Account Details</div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem">
+          <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+            <span class="text-sm text-muted">Account Role</span>
+            <span class="tag tag-blue">Employer</span>
+          </div>
+          <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+            <span class="text-sm text-muted">Member Since</span>
+            <span class="text-sm fw-semi" id="view-joined">—</span>
+          </div>
+          <div class="flex-between" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+            <span class="text-sm text-muted">Verification</span>
+            <span id="view-verification" class="text-sm fw-semi" style="color:var(--clr-success)">Verified</span>
+          </div>
+          <div class="flex-between" style="padding:0.6rem 0">
+            <span class="text-sm text-muted">Account ID</span>
+            <span class="text-xs text-muted" id="view-id">—</span>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;padding:1rem;background:rgba(27,110,68,0.04);border-radius:var(--radius-md);border:1px solid rgba(27,110,68,0.1)">
+          <div class="text-xs text-muted">Need help? Contact our admin team at <strong>admin@intambwe.rw</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Postings -->
+    <div class="card card-elevated mb-4">
+      <div class="section-title"><i data-lucide="briefcase" style="width:18px;height:18px;color:var(--clr-primary)"></i> My Postings</div>
+      <div id="postings-list"></div>
+      <a href="employer-dashboard.html" class="btn btn-ghost btn-sm mt-3 w-full">Go to Dashboard →</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script>
+  const user = ISH.requireAuth(['employer']);
+  if (!user) throw new Error('Not authenticated');
+
+  renderNav('employer');
+
+  let isEditing = false;
+
+  function loadProfile() {
+    const u = ISH.getUser(user.id) || user;
+    document.getElementById('profile-company').textContent = u.company || u.name;
+    document.getElementById('view-company').textContent = u.company || '—';
+    document.getElementById('view-name').textContent = u.name;
+    document.getElementById('view-email').textContent = u.email;
+    document.getElementById('view-sector').textContent = u.sector || '—';
+    document.getElementById('view-joined').textContent = new Date(u.createdAt).toLocaleDateString('en-RW', { year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('view-id').textContent = u.id;
+
+    if (!u.approved) {
+      document.getElementById('view-status').className = 'opp-status-badge status-pending';
+      document.getElementById('view-status').textContent = 'Pending';
+      document.getElementById('view-verification').textContent = 'Pending Verification';
+      document.getElementById('view-verification').style.color = 'var(--clr-warning)';
+      document.getElementById('status-banner').style.borderLeftColor = 'var(--clr-warning)';
+      document.getElementById('status-banner').innerHTML = `
+        <div class="flex items-center gap-2">
+          <i data-lucide="clock" style="width:20px;height:20px;color:var(--clr-warning)"></i>
+          <div>
+            <div class="fw-semi text-sm">Pending Approval</div>
+            <div class="text-xs text-muted">Your employer account is awaiting admin verification</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Stats
+    const myOpps = ISH.getOpportunities({ employer: u.id });
+    const allApps = ISH.getApplications({});
+    const myAppCount = myOpps.reduce((acc, o) => acc + allApps.filter(a => a.opportunityId === o.id).length, 0);
+
+    document.getElementById('stat-postings').textContent = myOpps.length;
+    document.getElementById('stat-active').textContent = myOpps.filter(o => o.status === 'active').length;
+    document.getElementById('stat-pending').textContent = myOpps.filter(o => o.status === 'pending').length;
+    document.getElementById('stat-applicants').textContent = myAppCount;
+
+    // Postings list
+    const listEl = document.getElementById('postings-list');
+    if (myOpps.length === 0) {
+      listEl.innerHTML = `
+        <div class="text-center text-muted text-sm" style="padding:1.5rem 0;">
+          <div style="margin-bottom:0.5rem"><i data-lucide="clipboard" style="width:32px;height:32px"></i></div>
+          <p>No postings yet. Post your first opportunity from the dashboard!</p>
+          <a href="employer-dashboard.html" class="btn btn-accent btn-sm mt-2">Go to Dashboard</a>
+        </div>
+      `;
+    } else {
+      listEl.innerHTML = myOpps.slice(0, 5).map(o => {
+        const appCount = allApps.filter(a => a.opportunityId === o.id).length;
+        const statusClass = o.status === 'active' ? 'status-active' : o.status === 'pending' ? 'status-pending' : o.status === 'rejected' ? 'status-rejected' : 'status-closed';
+        return `
+          <div class="flex items-center gap-2" style="padding:0.75rem 0;border-bottom:1px solid rgba(27,110,68,0.06)">
+            <div style="flex:1">
+              <div class="text-sm fw-semi">${o.title}</div>
+              <div class="text-xs text-muted">${o.type} · ${o.category} · ${appCount} applicant${appCount !== 1 ? 's' : ''}</div>
+            </div>
+            <span class="opp-status-badge ${statusClass}">${o.status.charAt(0).toUpperCase() + o.status.slice(1)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  function toggleEdit() {
+    isEditing = !isEditing;
+    document.getElementById('view-mode').classList.toggle('hidden', isEditing);
+    document.getElementById('edit-mode').classList.toggle('hidden', !isEditing);
+    document.getElementById('edit-toggle-btn').innerHTML = isEditing
+      ? '<i data-lucide="x" style="width:14px;height:14px"></i> Cancel'
+      : '<i data-lucide="edit-3" style="width:14px;height:14px"></i> Edit Profile';
+
+    if (isEditing) {
+      const u = ISH.getUser(user.id) || user;
+      document.getElementById('edit-company').value = u.company || '';
+      document.getElementById('edit-name').value = u.name || '';
+      document.getElementById('edit-sector').value = u.sector || '';
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  function saveProfile() {
+    const company = document.getElementById('edit-company').value.trim();
+    const name = document.getElementById('edit-name').value.trim();
+    const sector = document.getElementById('edit-sector').value;
+
+    if (!company) { ISH.toast('Please enter your company name.', 'error'); return; }
+    if (!name) { ISH.toast('Please enter your name.', 'error'); return; }
+
+    ISH.updateUser(user.id, { company, name, sector });
+    ISH.toast('Profile updated successfully!');
+    isEditing = false;
+    document.getElementById('view-mode').classList.remove('hidden');
+    document.getElementById('edit-mode').classList.add('hidden');
+    document.getElementById('edit-toggle-btn').innerHTML = '<i data-lucide="edit-3" style="width:14px;height:14px"></i> Edit Profile';
+    loadProfile();
+  }
+
+  loadProfile();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>
