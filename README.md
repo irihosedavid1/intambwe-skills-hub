@@ -60,7 +60,7 @@ Intambwe Skills Hub is a web platform that connects free skill courses, quiz-ver
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/irihosedavid/intambwe-skills-hub.git
+   git clone https://github.com/irihosedavid1/intambwe-skills-hub.git
    cd intambwe-skills-hub
    ```
 
