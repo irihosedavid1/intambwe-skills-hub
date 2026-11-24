@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse local internships, part-time jobs, and gigs on Intambwe Skills Hub.">
+  <title>Opportunities — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="container">
+      <h1>Local Opportunities</h1>
+      <p>Internships, part-time gigs, and full-time roles posted by trusted Rwandan employers.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <span class="search-icon"><i data-lucide="search" style="width:16px;height:16px"></i></span>
+        <input type="text" id="search-input" class="form-input" placeholder="Search by title or company..." oninput="filterOpps()">
+      </div>
+      <select id="type-filter" class="form-select" onchange="filterOpps()">
+        <option value="">All Types</option>
+        <option>Internship</option>
+        <option>Part-time</option>
+        <option>Full-time</option>
+        <option>Gig</option>
+      </select>
+      <select id="cat-filter" class="form-select" onchange="filterOpps()">
+        <option value="">All Categories</option>
+        <option>Technology</option>
+        <option>Marketing</option>
+        <option>Finance</option>
+        <option>Customer Service</option>
+        <option>Education</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <p class="text-sm text-muted mb-3" id="results-count"></p>
+
+    <!-- Grid -->
+    <div class="grid-auto" id="opps-grid"></div>
+
+    <div class="empty-state hidden" id="no-results">
+      <div class="empty-icon"><i data-lucide="briefcase" style="width:48px;height:48px"></i></div>
+      <h3>No opportunities found</h3>
+      <p>Try adjusting your search or check back later for new postings</p>
+    </div>
+  </div>
+</div>
+
+<!-- Opportunity Detail Modal -->
+<div id="opp-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="modal-title">Job Title</h3>
+        <p id="modal-company" class="text-sm text-muted"></p>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+    <div id="modal-actions" class="mt-4"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script>
+  renderNav('opportunities');
+  const user = ISH.getCurrentUser();
+
+  let allOpps = ISH.getOpportunities({ status: 'active' });
+
+  function renderOpps(list) {
+    const grid = document.getElementById('opps-grid');
+    const noRes = document.getElementById('no-results');
+    document.getElementById('results-count').textContent = `${list.length} opportunit${list.length !== 1 ? 'ies' : 'y'} available`;
+
+    if (list.length === 0) {
+      grid.innerHTML = '';
+      noRes.classList.remove('hidden');
+      return;
+    }
+    noRes.classList.add('hidden');
+
+    grid.innerHTML = list.map(opp => {
+      const applied = user ? ISH.hasApplied(user.id, opp.id) : false;
+      const daysLeft = Math.max(0, Math.ceil((new Date(opp.deadline) - new Date()) / 86400000));
+      const typeClass = opp.type === 'Full-time' ? 'tag-green' : opp.type === 'Internship' ? 'tag-blue' : opp.type === 'Part-time' ? 'tag-gold' : 'tag-purple';
+
+      return `
+        <div class="opp-card" onclick="openOppModal('${opp.id}')" style="cursor:pointer">
+          <div class="opp-card-top">
+            <div class="opp-company-logo">${opp.companyIcon || '<i data-lucide="building-2" style="width:24px;height:24px;color:#fff"></i>'}</div>
+            <div style="flex:1">
+              <div class="opp-title">${opp.title}</div>
+              <div class="opp-company">${opp.company}</div>
+            </div>
+            ${applied ? '<span class="opp-status-badge status-applied">Applied ✓</span>' : ''}
+          </div>
+          <div class="opp-tags">
+            <span class="tag ${typeClass}">${opp.type}</span>
+            <span class="tag tag-green">${opp.category}</span>
+            <span class="tag tag-blue">${opp.location}</span>
+          </div>
+          <div class="opp-desc">${opp.description}</div>
+          <div class="opp-footer">
+            <div class="opp-deadline">
+              ${daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed'}
+            </div>
+            <button class="btn ${applied ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="event.stopPropagation();handleApply('${opp.id}')">
+              ${applied ? '✓ Applied' : 'Apply Now'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  function filterOpps() {
+    const q   = document.getElementById('search-input').value.toLowerCase();
+    const type = document.getElementById('type-filter').value;
+    const cat  = document.getElementById('cat-filter').value;
+
+    const filtered = allOpps.filter(o => {
+      const matchQ   = !q    || o.title.toLowerCase().includes(q) || o.company.toLowerCase().includes(q);
+      const matchT   = !type || o.type === type;
+      const matchC   = !cat  || o.category === cat;
+      return matchQ && matchT && matchC;
+    });
+
+    renderOpps(filtered);
+  }
+
+  function openOppModal(id) {
+    const opp = allOpps.find(o => o.id === id);
+    if (!opp) return;
+
+    const applied = user ? ISH.hasApplied(user.id, id) : false;
+    const daysLeft = Math.max(0, Math.ceil((new Date(opp.deadline) - new Date()) / 86400000));
+
+    document.getElementById('modal-title').textContent = opp.title;
+    document.getElementById('modal-company').innerHTML = `${opp.companyIcon || '<i data-lucide="building-2" style="width:24px;height:24px;color:#fff"></i>'} ${opp.company} · ${opp.location}`;
+
+    document.getElementById('modal-body').innerHTML = `
+      <div class="opp-tags mb-3">
+        <span class="tag tag-blue">${opp.type}</span>
+        <span class="tag tag-green">${opp.category}</span>
+        <span class="tag tag-gold">${daysLeft > 0 ? daysLeft + ' days left' : 'Deadline passed'}</span>
+        ${applied ? '<span class="opp-status-badge status-applied">✓ You\'ve Applied</span>' : ''}
+      </div>
+      <div class="form-group">
+        <div class="form-label">About This Opportunity</div>
+        <p style="color:var(--clr-text);font-size:0.9rem;line-height:1.7">${opp.description}</p>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Requirements</div>
+        <p style="color:var(--clr-text);font-size:0.9rem;line-height:1.7">${opp.requirements}</p>
+      </div>
+      <div style="padding:0.75rem 1rem;background:rgba(27,110,68,0.08);border:1px solid rgba(27,110,68,0.2);border-radius:var(--radius-md)">
+        <div class="text-xs text-muted">Application Deadline: <strong style="color:var(--clr-text)">${new Date(opp.deadline).toLocaleDateString('en-RW', {day:'numeric',month:'long',year:'numeric'})}</strong></div>
+        <div class="text-xs text-muted mt-1">Location: <strong style="color:var(--clr-text)">${opp.location}</strong></div>
+      </div>
+    `;
+
+    document.getElementById('modal-actions').innerHTML = user
+      ? (user.role === 'student'
+          ? `<button class="btn ${applied ? 'btn-ghost' : 'btn-primary'} w-full" ${applied ? 'disabled' : ''} onclick="handleApply('${id}');closeModal()">
+               ${applied ? '✓ Already Applied' : 'Apply Now'}
+             </button>`
+          : `<p class="text-sm text-muted text-center">Only students can apply to opportunities.</p>`)
+      : `<a href="auth.html" class="btn btn-primary w-full">Sign In to Apply</a>`;
+
+    document.getElementById('opp-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  function closeModal() {
+    document.getElementById('opp-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('opp-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function handleApply(oppId) {
+    if (!user) { window.location.href = 'auth.html'; return; }
+    if (user.role !== 'student') { ISH.toast('Only students can apply to opportunities.', 'info'); return; }
+
+    const result = ISH.applyToOpportunity(user.id, oppId);
+    if (result.ok) {
+      ISH.toast('Application submitted successfully!');
+      renderOpps(allOpps); // Re-render to show applied state
+    } else {
+      ISH.toast(result.error, 'info');
+    }
+  }
+
+  // Initial render
+  renderOpps(allOpps);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>

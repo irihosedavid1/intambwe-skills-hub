@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Employer dashboard — post opportunities and manage applications on Intambwe Skills Hub.">
+  <title>Employer Dashboard — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="container">
+      <div class="flex-between flex-wrap gap-2">
+        <div>
+          <h1 id="employer-name">Employer Dashboard</h1>
+          <p>Manage your job postings and review applicants</p>
+        </div>
+        <button class="btn btn-accent" onclick="openPostModal()">+ Post New Opportunity</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Stats -->
+    <div class="grid-4 mb-4">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">Total Postings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-active">0</div>
+        <div class="stat-label">Active Listings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-pending-posts">0</div>
+        <div class="stat-label">Pending Approval</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-applicants">0</div>
+        <div class="stat-label">Total Applicants</div>
+      </div>
+    </div>
+
+    <!-- My Postings -->
+    <div class="section-title">My Job Postings</div>
+    <div id="postings-list"></div>
+
+    <!-- Applicants Section -->
+    <div class="mt-4" id="applicants-section" style="display:none">
+      <div class="section-title">Applicants for: <span id="viewing-opp-title" style="color:var(--clr-primary-lt)"></span></div>
+      <div class="card card-elevated">
+        <div id="applicants-list"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm mt-2" onclick="document.getElementById('applicants-section').style.display='none'">← Back to Postings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Post Opportunity Modal -->
+<div id="post-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Post a New Opportunity</h3>
+      <button class="modal-close" onclick="closePostModal()">✕</button>
+    </div>
+    <div>
+      <div class="form-group">
+        <label class="form-label">Job Title *</label>
+        <input type="text" id="p-title" class="form-input" placeholder="e.g. Junior Web Developer Intern">
+      </div>
+      <div class="grid-2 gap-2">
+        <div class="form-group">
+          <label class="form-label">Type *</label>
+          <select id="p-type" class="form-select">
+            <option>Internship</option>
+            <option>Part-time</option>
+            <option>Full-time</option>
+            <option>Gig</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select id="p-category" class="form-select">
+            <option>Technology</option>
+            <option>Marketing</option>
+            <option>Finance</option>
+            <option>Customer Service</option>
+            <option>Education</option>
+            <option>Healthcare</option>
+            <option>Agriculture</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location *</label>
+        <input type="text" id="p-location" class="form-input" placeholder="e.g. Kigali, Rwanda">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea id="p-desc" class="form-textarea" placeholder="Describe the role, responsibilities, and what the candidate will learn..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Requirements</label>
+        <textarea id="p-reqs" class="form-textarea" style="min-height:70px" placeholder="Skills, experience, or qualifications needed..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Application Deadline *</label>
+        <input type="date" id="p-deadline" class="form-input">
+      </div>
+      <div id="post-error" class="form-error mb-2"></div>
+      <button class="btn btn-primary w-full" onclick="submitPosting()">Submit for Approval →</button>
+      <p class="text-xs text-muted text-center mt-2">Your posting will be reviewed by our admin team before going live.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script>
+  const user = ISH.requireAuth(['employer']);
+  if (!user) throw new Error('Not authenticated');
+
+  renderNav('employer');
+  document.getElementById('employer-name').textContent = user.company || user.name;
+
+  // Set min date for deadline
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() + 1);
+  document.getElementById('p-deadline').min = minDate.toISOString().split('T')[0];
+
+  function loadData() {
+    const myOpps = ISH.getOpportunities({ employer: user.id });
+    const allApps = ISH.getApplications({});
+    const myAppCount = myOpps.reduce((acc, o) => {
+      return acc + allApps.filter(a => a.opportunityId === o.id).length;
+    }, 0);
+
+    document.getElementById('stat-total').textContent = myOpps.length;
+    document.getElementById('stat-active').textContent = myOpps.filter(o => o.status === 'active').length;
+    document.getElementById('stat-pending-posts').textContent = myOpps.filter(o => o.status === 'pending').length;
+    document.getElementById('stat-applicants').textContent = myAppCount;
+
+    const listEl = document.getElementById('postings-list');
+    if (myOpps.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon"><i data-lucide="clipboard" style="width:48px;height:48px"></i></div>
+          <h3>No postings yet</h3>
+          <p>Post your first opportunity to start finding talented youth</p>
+          <button class="btn btn-accent mt-3" onclick="openPostModal()">+ Post Opportunity</button>
+        </div>
+      `;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div class="card card-elevated">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Deadline</th>
+              <th>Status</th>
+              <th>Applicants</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${myOpps.map(o => {
+              const appCount = allApps.filter(a => a.opportunityId === o.id).length;
+              const statusClass = o.status === 'active' ? 'status-active' : o.status === 'pending' ? 'status-pending' : 'status-rejected';
+              return `
+                <tr>
+                  <td class="fw-semi">${o.title}</td>
+                  <td><span class="tag tag-blue">${o.type}</span></td>
+                  <td><span class="tag tag-green">${o.category}</span></td>
+                  <td class="text-sm text-muted">${new Date(o.deadline).toLocaleDateString()}</td>
+                  <td><span class="opp-status-badge ${statusClass}">${o.status.charAt(0).toUpperCase() + o.status.slice(1)}</span></td>
+                  <td>
+                    ${appCount > 0
+                      ? `<button class="btn btn-ghost btn-sm" onclick="viewApplicants('${o.id}', '${o.title.replace(/'/g, "\\'")}')">${appCount} applicants</button>`
+                      : `<span class="text-muted text-sm">0</span>`
+                    }
+                  </td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" onclick="deletePosting('${o.id}')">Delete</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  function viewApplicants(oppId, title) {
+    const apps = ISH.getApplications({ oppId });
+    const users = ISH.getUsers();
+    const section = document.getElementById('applicants-section');
+    section.style.display = 'block';
+    document.getElementById('viewing-opp-title').textContent = title;
+
+    const listEl = document.getElementById('applicants-list');
+    if (apps.length === 0) {
+      listEl.innerHTML = '<div class="text-center text-muted text-sm" style="padding:1rem">No applications yet.</div>';
+      return;
+    }
+
+    listEl.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>University</th>
+            <th>Field</th>
+            <th>Applied</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${apps.map(a => {
+            const applicant = users.find(u => u.id === a.studentId) || { name: 'Unknown', university: '—', field: '—' };
+            return `
+              <tr>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="nav-avatar" style="width:32px;height:32px;font-size:0.8rem">${applicant.name.charAt(0)}</div>
+                    <span class="fw-semi">${applicant.name}</span>
+                  </div>
+                </td>
+                <td class="text-sm">${applicant.university || '—'}</td>
+                <td class="text-sm">${applicant.field || '—'}</td>
+                <td class="text-sm text-muted">${new Date(a.appliedAt).toLocaleDateString()}</td>
+                <td><span class="opp-status-badge status-applied">Applied</span></td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function deletePosting(id) {
+    if (!confirm('Are you sure you want to delete this posting?')) return;
+    // Mark as closed
+    const opps = ISH.getOpportunities({});
+    const idx = opps.findIndex(o => o.id === id);
+    if (idx >= 0) {
+      opps[idx].status = 'closed';
+      // Save back
+      localStorage.setItem('ish_opportunities', JSON.stringify(opps));
+      ISH.toast('Posting removed.', 'info');
+      loadData();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  }
+
+  function openPostModal() {
+    document.getElementById('post-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePostModal() {
+    document.getElementById('post-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+    document.getElementById('post-error').textContent = '';
+  }
+
+  document.getElementById('post-modal').addEventListener('click', function(e) {
+    if (e.target === this) closePostModal();
+  });
+
+  function submitPosting() {
+    const title    = document.getElementById('p-title').value.trim();
+    const type     = document.getElementById('p-type').value;
+    const category = document.getElementById('p-category').value;
+    const location = document.getElementById('p-location').value.trim();
+    const desc     = document.getElementById('p-desc').value.trim();
+    const reqs     = document.getElementById('p-reqs').value.trim();
+    const deadline = document.getElementById('p-deadline').value;
+    const errEl    = document.getElementById('post-error');
+    errEl.textContent = '';
+
+    if (!title)    { errEl.textContent = 'Please enter a job title.'; return; }
+    if (!location) { errEl.textContent = 'Please enter a location.'; return; }
+    if (!desc)     { errEl.textContent = 'Please enter a job description.'; return; }
+    if (!deadline) { errEl.textContent = 'Please set an application deadline.'; return; }
+
+    // Icon based on category
+    const icons = { Technology: 'monitor', Marketing: 'megaphone', Finance: 'bar-chart-2', 'Customer Service': 'phone', Education: 'book-open', Healthcare: 'heart-pulse', Agriculture: 'sprout', Other: 'building-2' };
+
+    ISH.saveOpportunity({
+      employerId: user.id,
+      title, type, category, location,
+      description: desc,
+      requirements: reqs,
+      deadline,
+      company: user.company || user.name,
+      companyIcon: icons[category] || 'building-2'
+    });
+
+    ISH.toast('Opportunity submitted for admin approval!');
+    closePostModal();
+
+    // Clear form
+    ['p-title', 'p-location', 'p-desc', 'p-reqs', 'p-deadline'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+
+    loadData();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  loadData();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>
