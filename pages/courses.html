@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse free skill courses on Intambwe Skills Hub and earn verified digital badges.">
+  <title>Courses — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="container">
+      <h1>Free Skill Courses</h1>
+      <p>Learn job-ready skills and earn verified digital badges. All courses are 100% free.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <span class="search-icon"><i data-lucide="search" style="width:16px;height:16px"></i></span>
+        <input type="text" id="search-input" class="form-input" placeholder="Search courses..." oninput="filterCourses()">
+      </div>
+      <select id="cat-filter" class="form-select" onchange="filterCourses()">
+        <option value="">All Categories</option>
+        <option>Technology</option>
+        <option>Marketing</option>
+        <option>Business</option>
+        <option>Soft Skills</option>
+        <option>Productivity</option>
+      </select>
+      <select id="diff-filter" class="form-select" onchange="filterCourses()">
+        <option value="">All Levels</option>
+        <option>Beginner</option>
+        <option>Intermediate</option>
+        <option>Advanced</option>
+      </select>
+    </div>
+
+    <!-- Results count -->
+    <p class="text-sm text-muted mb-3" id="results-count"></p>
+
+    <!-- Courses Grid -->
+    <div class="grid-auto" id="courses-grid"></div>
+
+    <!-- Empty state -->
+    <div class="empty-state hidden" id="no-results">
+      <div class="empty-icon"><i data-lucide="search" style="width:48px;height:48px"></i></div>
+      <h3>No courses found</h3>
+      <p>Try adjusting your search or filters</p>
+    </div>
+  </div>
+</div>
+
+<!-- Course Detail Modal -->
+<div id="course-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="modal-title">Course Title</h3>
+        <p id="modal-meta" class="text-sm text-muted"></p>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div id="modal-body">
+      <!-- Dynamic content -->
+    </div>
+
+    <div class="flex gap-2 mt-4" id="modal-actions">
+      <!-- Dynamic buttons -->
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script src="../js/courses-data.js"></script>
+<script>
+  renderNav('courses');
+  const user = ISH.getCurrentUser();
+  let selectedCourse = null;
+
+  function renderCourses(list) {
+    const grid = document.getElementById('courses-grid');
+    const noResults = document.getElementById('no-results');
+    const count = document.getElementById('results-count');
+
+    count.textContent = `${list.length} course${list.length !== 1 ? 's' : ''} found`;
+
+    if (list.length === 0) {
+      grid.innerHTML = '';
+      noResults.classList.remove('hidden');
+      return;
+    }
+
+    noResults.classList.add('hidden');
+
+    grid.innerHTML = list.map(c => {
+      const passed = user ? ISH.hasPassedCourse(user.id, c.id) : false;
+      return `
+        <div class="course-card" onclick="openModal('${c.id}')" style="cursor:pointer">
+          ${passed ? '<span class="course-completed-badge">✓ Completed</span>' : ''}
+          <div class="course-card-header" style="background:${c.bgGradient}">${renderCourseIcon(c.icon, '48')}</div>
+          <div class="course-card-body">
+            <div class="course-tags">
+              <span class="tag ${c.tagColor}">${c.category}</span>
+              <span class="tag ${c.difficulty === 'Intermediate' ? 'tag-gold' : 'tag-green'}">${c.difficulty}</span>
+            </div>
+            <div class="course-title">${c.title}</div>
+            <div class="course-desc">${c.description}</div>
+            <div class="course-meta">
+              <span><i data-lucide="clock" style="width:14px;height:14px"></i> ${c.duration}</span>
+              <span><i data-lucide="file-text" style="width:14px;height:14px"></i> ${c.quizQuestions.length} questions</span>
+            </div>
+            <button class="btn ${passed ? 'btn-ghost' : 'btn-primary'} btn-sm w-full">
+              ${passed ? 'Retake Quiz' : 'Start Learning'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    refreshIcons();
+  }
+
+  function filterCourses() {
+    const q    = document.getElementById('search-input').value.toLowerCase();
+    const cat  = document.getElementById('cat-filter').value;
+    const diff = document.getElementById('diff-filter').value;
+
+    const filtered = COURSES.filter(c => {
+      const matchQ = !q || c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q) || c.category.toLowerCase().includes(q);
+      const matchC = !cat  || c.category === cat;
+      const matchD = !diff || c.difficulty === diff;
+      return matchQ && matchC && matchD;
+    });
+
+    renderCourses(filtered);
+  }
+  // Shows the lesson video. Videos cannot play when the page is opened by double-click (file://),
+  // so we explain that, and we always give a button that opens the video on YouTube.
+  function videoBlock(course) {
+    const watchUrl  = 'https://www.youtube.com/watch?v=' + course.youtubeId;
+    const searchUrl = 'https://www.youtube.com/results?search_query=' +
+                      encodeURIComponent(course.title + ' tutorial for beginners');
+    const canEmbed = window.location.protocol !== 'file:';
+
+    const player = canEmbed
+      ? `<iframe
+            src="https://www.youtube.com/embed/${course.youtubeId}"
+            title="${course.youtubeTitle}"
+            style="width:100%;height:200px;border:none"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>`
+      : `<div style="padding:2rem 1rem;text-align:center;color:#fff;font-size:0.85rem">
+           Videos cannot play inside the page when it is opened by double-clicking the file.<br>
+           Open the site with Live Server, or use the button below.
+         </div>`;
+
+    return `
+      <div style="margin-bottom:1rem">
+        <div class="fw-semi text-sm mb-2">Course Resource</div>
+        <div style="border-radius:var(--radius-md);overflow:hidden;background:#000">${player}</div>
+        <p class="text-xs text-muted mt-1">${course.youtubeTitle}</p>
+        <div class="flex gap-2 mt-2 flex-wrap">
+          <a href="${watchUrl}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><i data-lucide="external-link"></i> Open on YouTube</a>
+          <a href="${searchUrl}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><i data-lucide="search"></i> Find another video</a>
+        </div>
+      </div>
+    `;
+  }
+
+  function openModal(courseId) {
+    selectedCourse = getCourseById(courseId);
+    if (!selectedCourse) return;
+
+    const passed = user ? ISH.hasPassedCourse(user.id, courseId) : false;
+    const result = user ? ISH.getQuizResults(user.id).find(r => r.courseId === courseId) : null;
+
+    document.getElementById('modal-title').textContent = selectedCourse.title;
+    document.getElementById('modal-meta').textContent = `${selectedCourse.category} · ${selectedCourse.difficulty} · ${selectedCourse.duration}`;
+
+    document.getElementById('modal-body').innerHTML = `
+      <p style="margin-bottom:1rem">${selectedCourse.description}</p>
+
+      ${result ? `
+        <div style="padding:0.75rem 1rem;background:${result.passed ? 'rgba(39,174,96,0.1)' : 'rgba(231,76,60,0.1)'};border:1px solid ${result.passed ? 'rgba(39,174,96,0.3)' : 'rgba(231,76,60,0.3)'};border-radius:var(--radius-md);margin-bottom:1rem">
+          <div class="fw-semi text-sm">${result.passed ? 'Passed' : 'Did not pass'} — Score: ${result.score}%</div>
+          <div class="text-xs text-muted">Last attempt: ${new Date(result.date).toLocaleDateString()}</div>
+        </div>
+      ` : ''}
+
+            ${videoBlock(selectedCourse)}
+
+      <div style="padding:0.75rem 1rem;background:rgba(27,110,68,0.08);border:1px solid rgba(27,110,68,0.2);border-radius:var(--radius-md)">
+        <div class="fw-semi text-sm mb-1">Quiz Info</div>
+        <div class="text-xs text-muted">• ${selectedCourse.quizQuestions.length} multiple-choice questions</div>
+        <div class="text-xs text-muted">• Pass score: 70% or higher</div>
+        <div class="text-xs text-muted">• Timer: 10 minutes</div>
+        <div class="text-xs text-muted">• Earn a verified badge on passing</div>
+      </div>
+    `;
+
+    document.getElementById('modal-actions').innerHTML = user
+      ? `<a href="quiz.html?course=${selectedCourse.id}" class="btn btn-primary w-full">
+           ${passed ? 'Retake Quiz' : 'Take Quiz to Earn Badge'}
+         </a>`
+      : `<a href="auth.html" class="btn btn-primary w-full">Sign In to Take Quiz</a>`;
+
+    document.getElementById('course-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    refreshIcons();
+  }
+
+  function closeModal() {
+    document.getElementById('course-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  // Close on overlay click
+  document.getElementById('course-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Initial render
+  renderCourses(COURSES);
+  refreshIcons();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Take a quiz and earn a verified digital skill badge on Intambwe Skills Hub.">
+  <title>Quiz — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .quiz-nav { display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem; }
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <!-- Loading State -->
+  <div id="quiz-loading" class="flex-center" style="min-height:60vh;flex-direction:column;gap:1rem">
+    <div class="spinner"></div>
+    <p class="text-muted">Loading quiz...</p>
+  </div>
+
+  <!-- Quiz Wrapper -->
+  <div class="quiz-wrapper hidden" id="quiz-container">
+    <!-- Header -->
+    <div class="quiz-header">
+      <div class="flex-between mb-2">
+        <a href="courses.html" class="btn btn-ghost btn-sm">← Back to Courses</a>
+        <div class="quiz-timer" id="timer"><i data-lucide="clock" style="width:14px;height:14px"></i> 10:00</div>
+      </div>
+      <h3 id="course-name">Course Name</h3>
+      <div class="quiz-progress-bar">
+        <div class="quiz-progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="flex-between">
+        <span class="quiz-question-num" id="question-num">Question 1 of 7</span>
+        <span class="text-xs text-muted" id="score-so-far"></span>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <div class="card card-elevated" id="question-card">
+      <div class="quiz-question-text" id="question-text"></div>
+      <div class="quiz-options" id="options-container"></div>
+      <div class="quiz-nav">
+        <div id="answer-feedback" style="font-size:0.85rem;font-weight:600"></div>
+        <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>
+          Next →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div class="quiz-wrapper hidden" id="result-container">
+    <div class="quiz-result card card-elevated">
+      <div id="result-icon" class="quiz-result-icon"></div>
+      <h2 id="result-title"></h2>
+      <div class="quiz-score-ring" id="score-ring">
+        <div class="quiz-score-num" id="score-num"></div>
+      </div>
+      <p id="result-msg" class="text-muted" style="max-width:400px;margin:0 auto;"></p>
+
+      <!-- Badge reveal on pass -->
+      <div id="badge-reveal" class="hidden mt-4" style="padding:1.5rem;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:var(--radius-lg)">
+        <div style="font-size:3rem;margin-bottom:0.5rem" id="badge-icon-reveal"></div>
+        <div class="fw-semi mb-1">New Badge Earned!</div>
+        <div class="text-sm text-muted" id="badge-name-reveal"></div>
+        <a href="badges.html" class="btn btn-accent btn-sm mt-3">View My Badges →</a>
+      </div>
+
+      <div class="flex gap-2 mt-4 flex-wrap" style="justify-content:center">
+        <button class="btn btn-primary" onclick="restartQuiz()">Try Again</button>
+        <a href="courses.html" class="btn btn-outline">Browse More Courses</a>
+        <a href="opportunities.html" class="btn btn-ghost">Find Jobs →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script src="../js/courses-data.js"></script>
+<script>
+  renderNav('courses');
+  const user = ISH.requireAuth(['student']);
+  if (!user) throw new Error('Not authenticated');
+
+  const params = new URLSearchParams(window.location.search);
+  const courseId = params.get('course');
+  const course = getCourseById(courseId);
+
+  if (!course) {
+    document.getElementById('quiz-loading').innerHTML = `
+      <div class="text-center">
+        <div style="font-size:3rem"><i data-lucide="x-circle" style="width:48px;height:48px;color:var(--clr-danger)"></i></div>
+        <h3>Course not found</h3>
+        <a href="courses.html" class="btn btn-primary mt-3">Back to Courses</a>
+      </div>
+    `;
+    refreshIcons();
+  } else {
+    initQuiz();
+  }
+
+  let currentQ = 0;
+  let answers  = [];
+  let answered = false;
+  let timerInterval;
+  let secondsLeft = 600; // 10 minutes
+
+  function initQuiz() {
+    document.getElementById('quiz-loading').classList.add('hidden');
+    document.getElementById('quiz-container').classList.remove('hidden');
+    document.getElementById('course-name').textContent = course.title;
+    renderQuestion();
+    startTimer();
+  }
+
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      secondsLeft--;
+      const m = Math.floor(secondsLeft / 60).toString().padStart(2,'0');
+      const s = (secondsLeft % 60).toString().padStart(2,'0');
+      const el = document.getElementById('timer');
+      el.innerHTML = `<i data-lucide="clock" style="width:14px;height:14px"></i> ${m}:${s}`;
+      el.classList.toggle('urgent', secondsLeft < 60);
+      refreshIcons();
+      if (secondsLeft <= 0) {
+        clearInterval(timerInterval);
+        finishQuiz();
+      }
+    }, 1000);
+  }
+
+  function renderQuestion() {
+    const q = course.quizQuestions[currentQ];
+    const total = course.quizQuestions.length;
+    const pct = (currentQ / total) * 100;
+
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('question-num').textContent = `Question ${currentQ + 1} of ${total}`;
+    document.getElementById('question-text').textContent = q.question;
+    document.getElementById('answer-feedback').textContent = '';
+    document.getElementById('next-btn').disabled = true;
+    answered = false;
+
+    const letters = ['A', 'B', 'C', 'D'];
+    document.getElementById('options-container').innerHTML = q.options.map((opt, i) => `
+      <button class="quiz-option" onclick="selectAnswer(${i})" id="opt-${i}">
+        <span class="quiz-option-letter">${letters[i]}</span>
+        <span>${opt}</span>
+      </button>
+    `).join('');
+  }
+
+  function selectAnswer(index) {
+    if (answered) return;
+    answered = true;
+
+    const q = course.quizQuestions[currentQ];
+    const isCorrect = index === q.correct;
+    answers.push({ questionIndex: currentQ, selected: index, correct: q.correct, isCorrect });
+
+    // Visual feedback
+    for (let i = 0; i < q.options.length; i++) {
+      const btn = document.getElementById('opt-' + i);
+      btn.disabled = true;
+      if (i === q.correct) btn.classList.add('correct');
+      else if (i === index && !isCorrect) btn.classList.add('wrong');
+    }
+
+    const feedback = document.getElementById('answer-feedback');
+    feedback.textContent = isCorrect ? 'Correct!' : `Incorrect. Answer: ${q.options[q.correct]}`;
+    feedback.style.color = isCorrect ? '#5CCA8A' : '#EC7063';
+
+    document.getElementById('next-btn').disabled = false;
+  }
+
+  function nextQuestion() {
+    currentQ++;
+    if (currentQ >= course.quizQuestions.length) {
+      clearInterval(timerInterval);
+      finishQuiz();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function finishQuiz() {
+    const correct = answers.filter(a => a.isCorrect).length;
+    const total   = course.quizQuestions.length;
+    const score   = Math.round((correct / total) * 100);
+    const passed  = score >= 70;
+
+    // Save result
+    ISH.saveQuizResult({ userId: user.id, courseId: course.id, score, passed, date: new Date().toISOString() });
+
+    // Award badge
+    if (passed) {
+      ISH.awardBadge(user.id, course, score);
+    }
+
+    // Show result
+    document.getElementById('quiz-container').classList.add('hidden');
+    const resultEl = document.getElementById('result-container');
+    resultEl.classList.remove('hidden');
+
+    document.getElementById('result-icon').innerHTML = passed
+      ? '<i data-lucide="trophy" style="width:64px;height:64px;color:var(--clr-success)"></i>'
+      : '<i data-lucide="frown" style="width:64px;height:64px;color:var(--clr-danger)"></i>';
+    document.getElementById('result-title').textContent = passed ? 'Quiz Passed!' : 'Keep Trying!';
+    document.getElementById('score-num').textContent = score + '%';
+    document.getElementById('result-msg').textContent = passed
+      ? `You scored ${score}% (${correct}/${total} correct). You've earned a verified badge for ${course.title}!`
+      : `You scored ${score}% (${correct}/${total} correct). You need 70% to pass. Review the course and try again!`;
+
+    // Score ring
+    const ring = document.getElementById('score-ring');
+    ring.style.setProperty('--score-pct', score * 3.6 + 'deg');
+
+    if (passed) {
+      const badgeReveal = document.getElementById('badge-reveal');
+      badgeReveal.classList.remove('hidden');
+      document.getElementById('badge-icon-reveal').innerHTML = renderCourseIcon(course.icon, '48');
+      document.getElementById('badge-name-reveal').textContent = course.title + ' Badge';
+    }
+
+    refreshIcons();
+  }
+
+  function restartQuiz() {
+    currentQ = 0;
+    answers = [];
+    answered = false;
+    clearInterval(timerInterval);
+    secondsLeft = 600;
+    document.getElementById('result-container').classList.add('hidden');
+    document.getElementById('quiz-container').classList.remove('hidden');
+    renderQuestion();
+    startTimer();
+  }
+
+  refreshIcons();
+</script>
+
+</body>
+</html>
