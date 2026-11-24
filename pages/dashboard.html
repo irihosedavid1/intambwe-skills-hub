@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Your Intambwe Skills Hub student dashboard — track courses, badges, and job applications.">
+  <title>My Dashboard — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .progress-bar-wrap { background: var(--clr-surface2); border-radius: var(--radius-pill); height: 8px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--clr-primary), var(--clr-accent)); border-radius: var(--radius-pill); transition: width 0.8s ease; }
+    .applied-item { display:flex;align-items:center;gap:1rem;padding:0.9rem 0;border-bottom:1px solid var(--clr-border); }
+    .applied-item:last-child { border-bottom: none; }
+    .course-progress-item { display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.75rem 0;border-bottom:1px solid rgba(27,110,68,0.08); }
+    .course-progress-item:last-child { border-bottom:none; }
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <!-- Welcome Banner -->
+  <div class="container" style="padding-top:2rem;">
+    <div class="dashboard-welcome" id="welcome-banner">
+      <h2 id="welcome-name">Welcome back!</h2>
+      <p id="welcome-sub">Continue your learning journey</p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid-4 mb-4" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-courses">0</div>
+        <div class="stat-label">Courses Completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-badges">0</div>
+        <div class="stat-label">Badges Earned</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-apps">0</div>
+        <div class="stat-label">Jobs Applied</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-score">0%</div>
+        <div class="stat-label">Avg Quiz Score</div>
+      </div>
+    </div>
+
+    <div class="grid-2 gap-4 mb-4">
+      <!-- My Badges -->
+      <div class="card card-elevated">
+        <div class="section-title"><i data-lucide="award" style="width:18px;height:18px;color:var(--clr-primary)"></i> My Badges</div>
+        <div id="my-badges-list">
+          <div class="text-center text-muted text-sm" style="padding:1.5rem 0;">Loading badges...</div>
+        </div>
+        <a href="badges.html" class="btn btn-ghost btn-sm mt-3 w-full">View All Badges →</a>
+      </div>
+
+      <!-- Course Progress -->
+      <div class="card card-elevated">
+        <div class="section-title"><i data-lucide="book-open" style="width:18px;height:18px;color:var(--clr-primary)"></i> Course Progress</div>
+        <div id="course-progress-list">
+          <div class="text-center text-muted text-sm" style="padding:1.5rem 0;">Loading courses...</div>
+        </div>
+        <a href="courses.html" class="btn btn-ghost btn-sm mt-3 w-full">Browse All Courses →</a>
+      </div>
+    </div>
+
+    <!-- Applied Opportunities -->
+    <div class="card card-elevated mb-4">
+      <div class="section-title"><i data-lucide="briefcase" style="width:18px;height:18px;color:var(--clr-primary)"></i> My Applications</div>
+      <div id="my-applications">
+        <div class="text-center text-muted text-sm" style="padding:1.5rem 0;">Loading applications...</div>
+      </div>
+      <a href="opportunities.html" class="btn btn-ghost btn-sm mt-3">Browse More Opportunities →</a>
+    </div>
+
+    <!-- Recommended Courses -->
+    <div class="mb-4">
+      <div class="section-title"><i data-lucide="star" style="width:18px;height:18px;color:var(--clr-primary)"></i> Recommended Next</div>
+      <div class="grid-auto" id="recommended-courses"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script src="../js/courses-data.js"></script>
+<script>
+  const user = ISH.requireAuth(['student']);
+  if (!user) throw new Error('Not authenticated');
+
+  renderNav('dashboard');
+
+  // Welcome
+  document.getElementById('welcome-name').textContent = `Welcome back, ${user.name.split(' ')[0]}!`;
+  document.getElementById('welcome-sub').textContent = `${user.university || 'Student'} · ${user.field || ''}`;
+
+  // Load data
+  const badges   = ISH.getBadges(user.id);
+  const results  = ISH.getQuizResults(user.id);
+  const apps     = ISH.getApplications({ userId: user.id });
+  const passed   = results.filter(r => r.passed);
+  const avgScore = passed.length ? Math.round(passed.reduce((a, r) => a + r.score, 0) / passed.length) : 0;
+
+  // Stats
+  document.getElementById('stat-courses').textContent = passed.length;
+  document.getElementById('stat-badges').textContent = badges.length;
+  document.getElementById('stat-apps').textContent = apps.length;
+  document.getElementById('stat-score').textContent = avgScore + '%';
+
+  // Badges list
+  const badgesEl = document.getElementById('my-badges-list');
+  if (badges.length === 0) {
+    badgesEl.innerHTML = `
+      <div class="text-center" style="padding:1.5rem 0;">
+        <div style="margin-bottom:0.5rem"><i data-lucide="award" style="width:32px;height:32px;color:var(--clr-accent)"></i></div>
+        <p class="text-sm text-muted">No badges yet. Complete a course quiz to earn one!</p>
+        <a href="courses.html" class="btn btn-primary btn-sm mt-2">Start a Course</a>
+      </div>
+    `;
+  } else {
+    badgesEl.innerHTML = badges.slice(0, 3).map(b => `
+      <div class="flex items-center gap-2" style="padding:0.6rem 0;border-bottom:1px solid rgba(27,110,68,0.08)">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C07D0B,#F5A623);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${b.icon}</div>
+        <div style="flex:1">
+          <div class="fw-semi text-sm">${b.courseName}</div>
+          <div class="text-xs text-muted">Score: ${b.score}% · ${new Date(b.earnedAt).toLocaleDateString()}</div>
+        </div>
+        <span class="badge-score">${b.score}%</span>
+      </div>
+    `).join('');
+  }
+
+  // Course Progress
+  const progressEl = document.getElementById('course-progress-list');
+  progressEl.innerHTML = COURSES.slice(0, 5).map(c => {
+    const result = results.find(r => r.courseId === c.id);
+    const pct = result ? result.score : 0;
+    return `
+      <div class="course-progress-item">
+        <span style="font-size:1.3rem">${renderCourseIcon(c.icon, '20')}</span>
+        <div style="flex:1">
+          <div class="text-sm fw-semi">${c.title}</div>
+          <div class="progress-bar-wrap mt-1">
+            <div class="progress-bar-fill" style="width:${result ? pct : 0}%"></div>
+          </div>
+        </div>
+        <span class="text-xs text-muted">${result ? (result.passed ? 'Passed' : 'Failed') : '—'}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Applications
+  const appsEl = document.getElementById('my-applications');
+  if (apps.length === 0) {
+    appsEl.innerHTML = `
+      <div class="text-center" style="padding:1.5rem 0;">
+        <div style="margin-bottom:0.5rem"><i data-lucide="briefcase" style="width:32px;height:32px;color:var(--clr-primary)"></i></div>
+        <p class="text-sm text-muted">No applications yet. Browse opportunities and apply!</p>
+        <a href="opportunities.html" class="btn btn-primary btn-sm mt-2">Find Opportunities</a>
+      </div>
+    `;
+  } else {
+    const opps = ISH.getOpportunities({ status: 'active' });
+    appsEl.innerHTML = apps.slice(0, 5).map(a => {
+      const opp = opps.find(o => o.id === a.opportunityId) || { title: 'Unknown', company: '', companyIcon: 'building-2' };
+      return `
+        <div class="applied-item">
+          <div style="font-size:1.5rem">${renderCourseIcon(opp.companyIcon || 'building-2', '24')}</div>
+          <div style="flex:1">
+            <div class="fw-semi text-sm">${opp.title}</div>
+            <div class="text-xs text-muted">${opp.company} · Applied ${new Date(a.appliedAt).toLocaleDateString()}</div>
+          </div>
+          <span class="opp-status-badge status-applied">Applied</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Recommended (courses not yet passed)
+  const recEl = document.getElementById('recommended-courses');
+  const notDone = COURSES.filter(c => !ISH.hasPassedCourse(user.id, c.id)).slice(0, 3);
+  if (notDone.length === 0) {
+    recEl.innerHTML = `<div class="text-center text-muted" style="grid-column:1/-1;padding:2rem">You've completed all courses! Check back for new content soon.</div>`;
+  } else {
+    recEl.innerHTML = notDone.map(c => `
+      <a href="courses.html" class="course-card" style="text-decoration:none;display:block">
+        <div class="course-card-header" style="background:${c.bgGradient}">${renderCourseIcon(c.icon, '48')}</div>
+        <div class="course-card-body">
+          <div class="course-tags"><span class="tag ${c.tagColor}">${c.category}</span></div>
+          <div class="course-title">${c.title}</div>
+          <div class="course-desc">${c.description}</div>
+          <div class="course-meta"><span><i data-lucide="clock" style="width:14px;height:14px"></i> ${c.duration}</span><span><i data-lucide="file-text" style="width:14px;height:14px"></i> ${c.quizQuestions.length} questions</span></div>
+          <button class="btn btn-primary btn-sm w-full">Start Course →</button>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>

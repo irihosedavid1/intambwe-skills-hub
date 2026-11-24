@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View your verified skill badges on Intambwe Skills Hub.">
+  <title>My Badges — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="container">
+      <h1>My Skill Badges</h1>
+      <p>Each badge proves you've passed a verified quiz. Share your profile to show employers what you can do.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Share card -->
+    <div id="share-banner" class="card card-elevated mb-4" style="background:linear-gradient(135deg,rgba(27,110,68,0.15),rgba(245,166,35,0.08));border-color:rgba(245,166,35,0.2)">
+      <div class="flex-between flex-wrap gap-2">
+        <div>
+          <div class="fw-semi mb-1">Share Your Badge Profile</div>
+          <p class="text-sm text-muted">Copy your profile link to show employers your verified skills</p>
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="copyProfileLink()">Copy Profile Link</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-4 mb-4" id="badge-stats">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">Badges Earned</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-avg">—</div>
+        <div class="stat-label">Average Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-remaining">0</div>
+        <div class="stat-label">More to Earn</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-pct">0%</div>
+        <div class="stat-label">Completion Rate</div>
+      </div>
+    </div>
+
+    <!-- Badges Grid -->
+    <div class="section-title">Earned Badges</div>
+    <div class="grid-4 mb-4" id="badges-grid"></div>
+
+    <!-- Available Badges (not yet earned) -->
+    <div class="section-title mt-4">Available Badges</div>
+    <div class="grid-4" id="available-grid"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script src="../js/courses-data.js"></script>
+<script>
+  renderNav('badges');
+  const user = ISH.requireAuth(['student']);
+  if (!user) throw new Error('Not authenticated');
+
+  const badges  = ISH.getBadges(user.id);
+  const earnedIds = badges.map(b => b.courseId);
+  const available = COURSES.filter(c => !earnedIds.includes(c.id));
+
+  // Stats
+  document.getElementById('stat-total').textContent = badges.length;
+  document.getElementById('stat-remaining').textContent = available.length;
+  document.getElementById('stat-pct').textContent = Math.round((badges.length / COURSES.length) * 100) + '%';
+  if (badges.length > 0) {
+    const avg = Math.round(badges.reduce((a, b) => a + b.score, 0) / badges.length);
+    document.getElementById('stat-avg').textContent = avg + '%';
+  }
+
+  // Earned Badges
+  const grid = document.getElementById('badges-grid');
+  if (badges.length === 0) {
+    grid.innerHTML = `
+      <div class="badge-empty" style="grid-column:1/-1">
+        <div class="empty-icon"><i data-lucide="award" style="width:48px;height:48px"></i></div>
+        <h3>No badges yet</h3>
+        <p>Complete a course quiz with 70%+ to earn your first badge!</p>
+        <a href="courses.html" class="btn btn-primary mt-3">Start a Course</a>
+      </div>
+    `;
+  } else {
+    grid.innerHTML = badges.map(b => `
+      <div class="badge-card">
+        <div class="badge-icon-wrap">${renderCourseIcon(b.icon, '32')}</div>
+        <div class="badge-name">${b.courseName}</div>
+        <div class="badge-meta">Earned ${new Date(b.earnedAt).toLocaleDateString('en-RW', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+        <div class="badge-score">${b.score}% Score</div>
+        <div style="margin-top:0.75rem;position:relative;z-index:1">
+          <button class="btn btn-ghost btn-sm w-full" onclick="shareBadge('${b.courseName}', ${b.score})">Share</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Available (not yet earned)
+  const availGrid = document.getElementById('available-grid');
+  if (available.length === 0) {
+    availGrid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--clr-text-muted)">
+        You've earned all available badges! More courses coming soon.
+      </div>
+    `;
+  } else {
+    availGrid.innerHTML = available.map(c => `
+      <div style="background:var(--glass-bg);border:1px dashed var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;opacity:0.6;transition:var(--transition)" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">
+        <div style="margin-bottom:0.75rem;filter:grayscale(1)">${renderCourseIcon(c.icon, '40')}</div>
+        <div class="fw-semi text-sm mb-1">${c.title}</div>
+        <div class="text-xs text-muted mb-2">${c.category} · ${c.difficulty}</div>
+        <a href="courses.html" class="btn btn-outline btn-sm w-full">Start Course</a>
+      </div>
+    `).join('');
+  }
+
+  function copyProfileLink() {
+    const link = `${window.location.origin}/pages/badges.html?user=${user.id}`;
+    navigator.clipboard.writeText(link).then(() => {
+      ISH.toast('Profile link copied to clipboard!');
+    }).catch(() => {
+      ISH.toast('Copy this link: ' + link, 'info', 5000);
+    });
+  }
+
+  function shareBadge(name, score) {
+    const text = `I earned the "${name}" badge on Intambwe Skills Hub with a score of ${score}%!`;
+    if (navigator.share) {
+      navigator.share({ title: 'My Skill Badge', text, url: window.location.href });
+    } else {
+      navigator.clipboard.writeText(text).then(() => ISH.toast('Badge info copied!'));
+    }
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>
