@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in or create your free Intambwe Skills Hub account.">
+  <title>Sign In / Register — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="auth-page">
+  <div class="auth-bg"></div>
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-mark"><i data-lucide="sprout" style="width:28px;height:28px;color:#fff"></i></div>
+      <h3 style="margin:0">Intambwe Skills Hub</h3>
+      <p class="text-sm text-muted mt-1">Rwanda’s skills-to-jobs platform</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab-btn" id="tab-register" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="login-email" class="form-input" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="login-password" class="form-input" placeholder="Your password">
+      </div>
+      <div id="login-error" class="form-error" style="margin-bottom:0.75rem"></div>
+      <button class="btn btn-primary w-full" onclick="handleLogin()">Sign In →</button>
+      <div class="text-center mt-3">
+        <p class="text-sm text-muted">Don't have an account? <a href="#" onclick="switchTab('register')" style="color:var(--clr-primary-lt)">Create one free</a></p>
+      </div>
+      <div style="margin-top:1.5rem;padding:1rem;background:var(--clr-surface2);border-radius:var(--radius-md);border:1px solid var(--clr-border)">
+        <p class="text-xs text-muted fw-semi mb-2">Demo Accounts</p>
+        <p class="text-xs text-muted">Student: <strong>student@intambwe.rw</strong> / <strong>student123</strong></p>
+        <p class="text-xs text-muted">Employer: <strong>employer@intambwe.rw</strong> / <strong>employer123</strong></p>
+        <p class="text-xs text-muted">Admin: <strong>admin@intambwe.rw</strong> / <strong>admin123</strong></p>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="hidden">
+      <div class="form-group">
+        <label class="form-label">I am a...</label>
+        <div class="role-selector">
+          <div class="role-option">
+            <input type="radio" name="role" id="role-student" value="student" checked>
+            <label class="role-label" for="role-student">
+              <span class="role-icon"><i data-lucide="graduation-cap" style="width:24px;height:24px"></i></span>
+              <span class="role-name">Student</span>
+              <span class="role-desc">Learn, earn badges, get hired</span>
+            </label>
+          </div>
+          <div class="role-option">
+            <input type="radio" name="role" id="role-employer" value="employer">
+            <label class="role-label" for="role-employer">
+              <span class="role-icon"><i data-lucide="building-2" style="width:24px;height:24px"></i></span>
+              <span class="role-name">Employer</span>
+              <span class="role-desc">Post jobs, find talent</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="reg-password" class="form-input" placeholder="Minimum 6 characters">
+      </div>
+
+      <!-- Student fields -->
+      <div id="student-fields">
+        <div class="form-group">
+          <label class="form-label">University / School</label>
+          <input type="text" id="reg-university" class="form-input" placeholder="e.g. University of Rwanda">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Field of Study</label>
+          <select id="reg-field" class="form-select">
+            <option value="">Select your field...</option>
+            <option>Computer Science</option>
+            <option>Business Administration</option>
+            <option>Engineering</option>
+            <option>Social Sciences</option>
+            <option>Education</option>
+            <option>Health Sciences</option>
+            <option>Agriculture</option>
+            <option>Arts &amp; Design</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Employer fields -->
+      <div id="employer-fields" class="hidden">
+        <div class="form-group">
+          <label class="form-label">Company Name</label>
+          <input type="text" id="reg-company" class="form-input" placeholder="Your company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Industry Sector</label>
+          <select id="reg-sector" class="form-select">
+            <option value="">Select sector...</option>
+            <option>Information Technology</option>
+            <option>Finance &amp; Banking</option>
+            <option>Education</option>
+            <option>Healthcare</option>
+            <option>Agriculture</option>
+            <option>Retail &amp; E-commerce</option>
+            <option>Tourism &amp; Hospitality</option>
+            <option>Manufacturing</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="reg-error" class="form-error" style="margin-bottom:0.75rem"></div>
+      <button class="btn btn-primary w-full" onclick="handleRegister()">Create Account →</button>
+      <div class="text-center mt-3">
+        <p class="text-sm text-muted">Already have an account? <a href="#" onclick="switchTab('login')" style="color:var(--clr-primary-lt)">Sign in</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script>
+  renderNav();
+
+  // Redirect if already logged in
+  const existing = ISH.getCurrentUser();
+  if (existing) {
+    if (existing.role === 'student') window.location.href = 'dashboard.html';
+    else if (existing.role === 'employer') window.location.href = 'employer-dashboard.html';
+    else if (existing.role === 'admin') window.location.href = 'admin.html';
+  }
+
+  // Check URL for tab/role hints
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tab') === 'register') switchTab('register');
+  if (params.get('role') === 'employer') {
+    document.getElementById('role-employer').checked = true;
+    toggleRoleFields();
+  }
+
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('login-form').classList.toggle('hidden', !isLogin);
+    document.getElementById('register-form').classList.toggle('hidden', isLogin);
+    document.getElementById('tab-login').classList.toggle('active', isLogin);
+    document.getElementById('tab-register').classList.toggle('active', !isLogin);
+  }
+
+  function toggleRoleFields() {
+    const role = document.querySelector('input[name="role"]:checked').value;
+    document.getElementById('student-fields').classList.toggle('hidden', role !== 'student');
+    document.getElementById('employer-fields').classList.toggle('hidden', role !== 'employer');
+  }
+
+  document.querySelectorAll('input[name="role"]').forEach(r => r.addEventListener('change', toggleRoleFields));
+
+  function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
+    errorEl.textContent = '';
+
+    if (!email || !password) { errorEl.textContent = 'Please enter your email and password.'; return; }
+
+    const result = ISH.login(email, password);
+    if (!result.ok) { errorEl.textContent = result.error; return; }
+
+    ISH.toast('Welcome back, ' + result.user.name.split(' ')[0] + '!');
+    setTimeout(() => {
+      if (result.user.role === 'student') window.location.href = 'dashboard.html';
+      else if (result.user.role === 'employer') window.location.href = 'employer-dashboard.html';
+      else if (result.user.role === 'admin') window.location.href = 'admin.html';
+    }, 800);
+  }
+
+  function handleRegister() {
+    const role = document.querySelector('input[name="role"]:checked').value;
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const errorEl = document.getElementById('reg-error');
+    errorEl.textContent = '';
+
+    if (!name) { errorEl.textContent = 'Please enter your full name.'; return; }
+    if (!email || !email.includes('@')) { errorEl.textContent = 'Please enter a valid email address.'; return; }
+    if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters.'; return; }
+
+    const data = { name, email, password, role };
+    if (role === 'student') {
+      data.university = document.getElementById('reg-university').value.trim();
+      data.field = document.getElementById('reg-field').value;
+    } else {
+      data.company = document.getElementById('reg-company').value.trim();
+      data.sector = document.getElementById('reg-sector').value;
+      if (!data.company) { errorEl.textContent = 'Please enter your company name.'; return; }
+    }
+
+    const result = ISH.register(data);
+    if (!result.ok) { errorEl.textContent = result.error; return; }
+
+    if (role === 'employer') {
+      ISH.toast('Account created! Awaiting admin approval. We will notify you.', 'info', 5000);
+      setTimeout(() => window.location.href = '../index.html', 2000);
+    } else {
+      ISH.toast('Account created! Welcome to Intambwe Skills Hub!');
+      setTimeout(() => window.location.href = 'dashboard.html', 800);
+    }
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (!document.getElementById('login-form').classList.contains('hidden')) handleLogin();
+      else handleRegister();
+    }
+  });
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+</body>
+</html>

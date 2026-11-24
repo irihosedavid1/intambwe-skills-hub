@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manage your student profile, view earned skill badges, track your applications, and showcase your achievements on Intambwe Skills Hub.">
+  <title>Student Profile — Intambwe Skills Hub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .profile-hero {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .profile-avatar-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(27, 110, 68, 0.25);
+      flex-shrink: 0;
+    }
+    .profile-meta-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-top: 0.6rem;
+      color: var(--clr-text-muted);
+      font-size: 0.88rem;
+    }
+    .profile-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .badge-card-compact {
+      position: relative;
+      background: linear-gradient(135deg, #FFFFFF, var(--clr-surface2));
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1rem;
+      text-align: center;
+      overflow: hidden;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .badge-card-compact::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: conic-gradient(
+        transparent 0deg,
+        rgba(245,166,35,0.06) 60deg,
+        transparent 120deg
+      );
+      animation: badgeSpin 6s linear infinite;
+    }
+    .badge-card-compact:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-gold);
+      border-color: rgba(245,166,35,0.35);
+    }
+    .badge-card-compact .badge-icon-wrap {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 0.75rem;
+      font-size: 1.5rem;
+    }
+    .badge-card-compact .badge-icon-wrap .lucide {
+      width: 26px;
+      height: 26px;
+    }
+    .badge-card-compact .badge-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--clr-text);
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+    .badge-card-compact .badge-meta {
+      font-size: 0.72rem;
+      color: var(--clr-text-muted);
+    }
+    .applied-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .applied-item:last-child {
+      border-bottom: none;
+    }
+    .share-box {
+      background: linear-gradient(135deg, rgba(27,110,68,0.06), rgba(245,166,35,0.06));
+      border: 1px solid rgba(27,110,68,0.2);
+    }
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-wrapper">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <h1>Student Profile</h1>
+      <p>View and manage your academic background, verified skill credentials, and job applications.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Profile Header Card (View & Inline Edit) -->
+    <div class="card card-elevated mb-4" id="profile-card">
+      <!-- View Mode -->
+      <div id="profile-view-mode">
+        <div class="flex-between flex-wrap gap-3 items-center">
+          <div class="profile-hero">
+            <div class="profile-avatar-large" id="avatar-initial">?</div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 id="view-name" style="margin-bottom:0">Student Name</h2>
+                <span class="tag tag-green"><i data-lucide="check-circle" style="width:13px;height:13px;margin-right:2px"></i> Verified Student</span>
+              </div>
+              <div class="profile-meta-grid">
+                <span class="profile-meta-item">
+                  <i data-lucide="graduation-cap" style="width:16px;height:16px;color:var(--clr-primary)"></i>
+                  <span id="view-university">University</span>
+                </span>
+                <span class="profile-meta-item">
+                  <i data-lucide="book-open" style="width:16px;height:16px;color:var(--clr-primary)"></i>
+                  <span id="view-field">Field of Study</span>
+                </span>
+                <span class="profile-meta-item">
+                  <i data-lucide="mail" style="width:16px;height:16px;color:var(--clr-primary)"></i>
+                  <span id="view-email">email@example.com</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-outline" id="btn-edit-toggle" onclick="toggleEditMode(true)">
+            <i data-lucide="edit-3" style="width:16px;height:16px"></i> Edit Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- Edit Mode (Inline Form) -->
+      <div id="profile-edit-mode" class="hidden">
+        <div class="flex-between flex-wrap gap-2 mb-3 pb-2" style="border-bottom:1px solid var(--clr-border)">
+          <h3 class="flex items-center gap-2" style="margin:0">
+            <i data-lucide="user-cog" style="width:20px;height:20px;color:var(--clr-primary)"></i>
+            Edit Profile Information
+          </h3>
+          <span class="text-xs text-muted">Update your public student details</span>
+        </div>
+        <form id="profile-edit-form" onsubmit="event.preventDefault(); saveProfile();">
+          <div class="grid-2 gap-3">
+            <div class="form-group">
+              <label class="form-label" for="edit-name">Full Name <span style="color:var(--clr-danger)">*</span></label>
+              <input type="text" id="edit-name" class="form-input" placeholder="e.g. Marie Mukamana" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-email">Email Address</label>
+              <input type="email" id="edit-email" class="form-input" disabled style="background:var(--clr-surface2);cursor:not-allowed;opacity:0.8;">
+              <div class="form-hint text-xs" style="margin-top:0.3rem;color:var(--clr-text-dim)">Account email cannot be modified</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-university">University / Institution <span style="color:var(--clr-danger)">*</span></label>
+              <input type="text" id="edit-university" class="form-input" placeholder="e.g. University of Rwanda" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-field">Field of Study <span style="color:var(--clr-danger)">*</span></label>
+              <select id="edit-field" class="form-select" required>
+                <option value="">Select your field...</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Business Administration">Business Administration</option>
+                <option value="Finance & Accounting">Finance & Accounting</option>
+                <option value="Marketing & Communications">Marketing & Communications</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Social Sciences">Social Sciences</option>
+                <option value="Education">Education</option>
+                <option value="Health Sciences">Health Sciences</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Arts & Design">Arts & Design</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary" id="btn-save">
+              <i data-lucide="check" style="width:16px;height:16px"></i> Save Changes
+            </button>
+            <button type="button" class="btn btn-outline" id="btn-cancel" onclick="toggleEditMode(false)">
+              <i data-lucide="x" style="width:16px;height:16px"></i> Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Share Profile Section -->
+    <div class="card card-elevated share-box mb-4">
+      <div class="flex-between flex-wrap gap-3 items-center">
+        <div style="max-width:560px">
+          <div class="fw-semi text-lg mb-1 flex items-center gap-2">
+            <i data-lucide="share-2" style="width:20px;height:20px;color:var(--clr-primary)"></i>
+            Share Profile
+          </div>
+          <p class="text-sm text-muted">
+            Share your profile link to showcase your verified skill badges and academic background to employers.
+          </p>
+        </div>
+        <div class="flex items-center gap-2" style="flex:1;min-width:280px;max-width:440px">
+          <input type="text" id="share-link-input" class="form-input text-xs" readonly style="background:#FFFFFF;font-family:monospace;cursor:text">
+          <button class="btn btn-accent btn-sm flex items-center gap-1" onclick="copyProfileLink()" style="white-space:nowrap">
+            <i data-lucide="copy" style="width:16px;height:16px"></i> Copy Link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Skills Summary Section -->
+    <div class="mb-4">
+      <div class="section-title">
+        <i data-lucide="trending-up" style="width:20px;height:20px;color:var(--clr-primary)"></i>
+        My Skills Summary
+      </div>
+      <div class="grid-3 mb-2" id="skills-summary">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-courses">0</div>
+          <div class="stat-label">Courses Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-badges">0</div>
+          <div class="stat-label">Badges Earned</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-score">0%</div>
+          <div class="stat-label">Avg Quiz Score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badges Earned Section -->
+    <div class="mb-4">
+      <div class="flex-between items-center mb-2">
+        <div class="section-title" style="margin-bottom:0">
+          <i data-lucide="award" style="width:20px;height:20px;color:var(--clr-primary)"></i>
+          Badges Earned
+        </div>
+        <a href="badges.html" class="btn btn-ghost btn-sm">View All Badges →</a>
+      </div>
+      <div class="grid-4" id="badges-grid">
+        <div class="text-center text-muted text-sm" style="grid-column:1/-1;padding:1.5rem 0;">Loading badges...</div>
+      </div>
+    </div>
+
+    <!-- Recent Applications Section -->
+    <div class="card card-elevated mb-4">
+      <div class="section-title">
+        <i data-lucide="briefcase" style="width:20px;height:20px;color:var(--clr-primary)"></i>
+        Recent Applications
+      </div>
+      <div id="applications-list">
+        <div class="text-center text-muted text-sm" style="padding:1.5rem 0;">Loading applications...</div>
+      </div>
+      <div class="mt-3 text-right">
+        <a href="opportunities.html" class="btn btn-ghost btn-sm">Browse More Opportunities →</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../js/state.js"></script>
+<script src="../js/nav.js"></script>
+<script src="../js/courses-data.js"></script>
+<script>
+  // 1. Authenticate student
+  let user = ISH.requireAuth(['student']);
+  if (!user) throw new Error('Not authenticated');
+
+  // 2. Render Navigation
+  renderNav('profile');
+
+  // 3. Populate Profile Header (View Mode)
+  function renderProfileView() {
+    const avatar = document.getElementById('avatar-initial');
+    const nameEl = document.getElementById('view-name');
+    const uniEl  = document.getElementById('view-university');
+    const fieldEl = document.getElementById('view-field');
+    const emailEl = document.getElementById('view-email');
+
+    avatar.textContent = user.name ? user.name.charAt(0).toUpperCase() : '?';
+    nameEl.textContent = user.name || 'Student';
+    uniEl.textContent  = user.university || 'University not specified';
+    fieldEl.textContent = user.field || 'Field not specified';
+    emailEl.textContent = user.email || '';
+
+    // Update share link
+    const shareInput = document.getElementById('share-link-input');
+    if (shareInput) {
+      shareInput.value = `${window.location.origin}${window.location.pathname}?user=${user.id}`;
+    }
+  }
+
+  // 4. Toggle Edit Mode
+  function toggleEditMode(editing) {
+    const viewSection = document.getElementById('profile-view-mode');
+    const editSection = document.getElementById('profile-edit-mode');
+
+    if (editing) {
+      document.getElementById('edit-name').value = user.name || '';
+      document.getElementById('edit-email').value = user.email || '';
+      document.getElementById('edit-university').value = user.university || '';
+
+      const fieldSelect = document.getElementById('edit-field');
+      const currentField = user.field || '';
+      if (currentField) {
+        let found = false;
+        for (let i = 0; i < fieldSelect.options.length; i++) {
+          if (fieldSelect.options[i].value.toLowerCase() === currentField.toLowerCase()) {
+            fieldSelect.selectedIndex = i;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          const opt = document.createElement('option');
+          opt.value = currentField;
+          opt.textContent = currentField;
+          opt.selected = true;
+          fieldSelect.appendChild(opt);
+        }
+      } else {
+        fieldSelect.selectedIndex = 0;
+      }
+
+      viewSection.classList.add('hidden');
+      editSection.classList.remove('hidden');
+      document.getElementById('edit-name').focus();
+    } else {
+      editSection.classList.add('hidden');
+      viewSection.classList.remove('hidden');
+    }
+
+    refreshIcons();
+  }
+
+  // 5. Save Profile Edits
+  function saveProfile() {
+    const name = document.getElementById('edit-name').value.trim();
+    const university = document.getElementById('edit-university').value.trim();
+    const field = document.getElementById('edit-field').value.trim();
+
+    if (!name) {
+      ISH.toast('Please enter your full name.', 'warning');
+      return;
+    }
+
+    const updated = ISH.updateUser(user.id, { name, university, field });
+    if (updated) {
+      user = ISH.getCurrentUser();
+      renderProfileView();
+      renderNav('profile');
+      toggleEditMode(false);
+      ISH.toast('Profile updated successfully!');
+    } else {
+      ISH.toast('Failed to update profile. Please try again.', 'error');
+    }
+  }
+
+  // 6. Copy Profile Link
+  function copyProfileLink() {
+    const linkInput = document.getElementById('share-link-input');
+    const url = linkInput ? linkInput.value : `${window.location.origin}${window.location.pathname}?user=${user.id}`;
+
+    navigator.clipboard.writeText(url).then(() => {
+      ISH.toast('Profile link copied to clipboard!');
+    }).catch(() => {
+      if (linkInput) {
+        linkInput.select();
+        document.execCommand('copy');
+        ISH.toast('Profile link copied to clipboard!');
+      } else {
+        ISH.toast('Copy profile link: ' + url, 'info', 5000);
+      }
+    });
+  }
+
+  // 7. Load and Render Skills Summary
+  function loadSkillsSummary() {
+    const badges = ISH.getBadges(user.id);
+    const results = ISH.getQuizResults(user.id);
+    const passed = results.filter(r => r.passed);
+    const avgScore = passed.length ? Math.round(passed.reduce((a, r) => a + r.score, 0) / passed.length) : 0;
+
+    document.getElementById('stat-courses').textContent = passed.length;
+    document.getElementById('stat-badges').textContent = badges.length;
+    document.getElementById('stat-score').textContent = avgScore + '%';
+  }
+
+  // 8. Load and Render Earned Badges (Compact cards)
+  function loadBadges() {
+    const badges = ISH.getBadges(user.id);
+    const grid = document.getElementById('badges-grid');
+
+    if (badges.length === 0) {
+      grid.innerHTML = `
+        <div class="card card-elevated text-center" style="grid-column:1/-1;padding:2.5rem 1.5rem;">
+          <div style="margin-bottom:0.75rem;color:var(--clr-accent)">
+            <i data-lucide="award" style="width:40px;height:40px"></i>
+          </div>
+          <h3 style="font-size:1.1rem;margin-bottom:0.3rem">No badges earned yet</h3>
+          <p class="text-sm text-muted mb-3">Complete course quizzes with a passing score of 70%+ to earn verified digital badges.</p>
+          <a href="courses.html" class="btn btn-primary btn-sm">Start a Course →</a>
+        </div>
+      `;
+    } else {
+      grid.innerHTML = badges.map(b => `
+        <div class="badge-card-compact">
+          <div class="badge-icon-wrap">${renderCourseIcon(b.icon, '26')}</div>
+          <div class="badge-name">${b.courseName}</div>
+          <div class="badge-meta">Earned ${new Date(b.earnedAt).toLocaleDateString('en-RW', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+          <span class="badge-score">${b.score}% Score</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  // 9. Load and Render Recent Applications (Last 3)
+  function loadRecentApplications() {
+    const appsEl = document.getElementById('applications-list');
+    const apps = ISH.getApplications({ userId: user.id });
+
+    if (apps.length === 0) {
+      appsEl.innerHTML = `
+        <div class="text-center" style="padding:2rem 1rem;">
+          <div style="margin-bottom:0.5rem;color:var(--clr-primary)">
+            <i data-lucide="briefcase" style="width:36px;height:36px"></i>
+          </div>
+          <p class="text-sm text-muted mb-2">You haven't submitted any job or internship applications yet.</p>
+          <a href="opportunities.html" class="btn btn-primary btn-sm mt-1">Find Opportunities →</a>
+        </div>
+      `;
+      return;
+    }
+
+    const opps = ISH.getOpportunities({ status: 'active' });
+    const allOpps = ISH.getOpportunities();
+
+    // Sort by appliedAt newest first and take last 3
+    const recentApps = [...apps]
+      .sort((a, b) => new Date(b.appliedAt || 0) - new Date(a.appliedAt || 0))
+      .slice(0, 3);
+
+    appsEl.innerHTML = recentApps.map(a => {
+      const opp = opps.find(o => o.id === a.opportunityId) ||
+                  allOpps.find(o => o.id === a.opportunityId) ||
+                  { title: 'Opportunity', company: 'Company', companyIcon: 'building-2' };
+
+      const appliedDate = a.appliedAt
+        ? new Date(a.appliedAt).toLocaleDateString('en-RW', { year: 'numeric', month: 'short', day: 'numeric' })
+        : 'Recently';
+
+      return `
+        <div class="applied-item">
+          <div style="font-size:1.5rem">${renderCourseIcon(opp.companyIcon || 'building-2', '24')}</div>
+          <div style="flex:1">
+            <div class="fw-semi text-sm">${opp.title}</div>
+            <div class="text-xs text-muted">${opp.company}${opp.location ? ' · ' + opp.location : ''} · Applied ${appliedDate}</div>
+          </div>
+          <span class="opp-status-badge status-applied">${a.status ? a.status.toUpperCase() : 'APPLIED'}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Initial load
+  renderProfileView();
+  loadSkillsSummary();
+  loadBadges();
+  loadRecentApplications();
+  refreshIcons();
+</script>
+
+</body>
+</html>

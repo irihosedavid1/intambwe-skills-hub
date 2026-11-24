@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Intambwe Skills Hub — Learn skills, earn badges, and get hired by local employers. Rwanda's #1 youth skills platform.">
+  <title>Intambwe Skills Hub — Learn. Prove. Get Hired.</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .hero-content { padding: 2rem 0; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      transition: var(--transition);
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-glow);
+      border-color: rgba(27,110,68,0.4);
+    }
+    .courses-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .preview-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    .preview-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .preview-card-top {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    .preview-card-body { padding: 1rem 1.2rem; }
+    .counter { display: inline-block; }
+    .testimonial-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+    }
+    .testimonial-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-right: 0.75rem;
+    }
+    .cta-section {
+      background: linear-gradient(135deg, var(--clr-primary-dk) 0%, rgba(27,110,68,0.4) 100%);
+      border: 1px solid rgba(27,110,68,0.3);
+      border-radius: var(--radius-xl);
+      padding: 4rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(245,166,35,0.1) 0%, transparent 70%);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<div id="nav-placeholder"></div>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-eyebrow"><i data-lucide="map-pin" style="width:16px;height:16px"></i> Built for Rwandan Youth</div>
+      <h1>
+        Learn. <span class="highlight">Prove.</span><br>
+        Get Hired.
+      </h1>
+      <p>
+        Intambwe Skills Hub connects free skill courses, quiz-verified badges, and
+        local employer opportunities — all in one mobile-friendly platform built for Rwanda.
+      </p>
+      <div class="hero-ctas">
+        <a href="pages/auth.html?tab=register" class="btn btn-accent btn-lg">
+          Start Learning Free
+        </a>
+        <a href="pages/courses.html" class="btn btn-outline btn-lg">
+          Browse Courses
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll down</span>
+    <span>↓</span>
+  </div>
+</section>
+
+<!-- Stats Banner -->
+<section class="section-sm" style="padding: 0;">
+  <div class="container">
+    <div class="stats-banner fade-in-up">
+      <div class="stats-banner-item">
+        <div class="stats-banner-num">
+          <span class="counter" data-target="1200">0</span>+
+        </div>
+        <div class="stats-banner-label">Students Registered</div>
+      </div>
+      <div class="stats-banner-item">
+        <div class="stats-banner-num">
+          <span class="counter" data-target="8">0</span>
+        </div>
+        <div class="stats-banner-label">Free Skill Courses</div>
+      </div>
+      <div class="stats-banner-item">
+        <div class="stats-banner-num">
+          <span class="counter" data-target="850">0</span>+
+        </div>
+        <div class="stats-banner-label">Badges Earned</div>
+      </div>
+      <div class="stats-banner-item">
+        <div class="stats-banner-num">
+          <span class="counter" data-target="45">0</span>+
+        </div>
+        <div class="stats-banner-label">Employers Hiring</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it Works -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4 fade-in-up">
+      <p class="text-primary fw-semi text-sm" style="letter-spacing:0.1em;text-transform:uppercase;">How it Works</p>
+      <h2>Your Pathway from Skills to Employment</h2>
+      <p style="max-width:500px;margin:0.75rem auto 0;">Three simple steps to transform your learning into real career opportunities.</p>
+    </div>
+    <div class="pathway fade-in-up">
+      <div class="pathway-step">
+        <div class="pathway-num"><i data-lucide="book-open" style="width:24px;height:24px"></i></div>
+        <h3>Learn</h3>
+        <p>Access free, short skill courses created for the Rwandan job market. No fees, no prerequisites.</p>
+      </div>
+      <div class="pathway-step">
+        <div class="pathway-num"><i data-lucide="award" style="width:24px;height:24px"></i></div>
+        <h3>Prove</h3>
+        <p>Pass a quiz with 70%+ and earn a verified digital badge that proves your skill to employers.</p>
+      </div>
+      <div class="pathway-step">
+        <div class="pathway-num"><i data-lucide="briefcase" style="width:24px;height:24px"></i></div>
+        <h3>Get Hired</h3>
+        <p>Apply to local internships, part-time gigs, and full-time roles posted by trusted employers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section" style="background: rgba(27,110,68,0.03); border-top: 1px solid var(--clr-border); border-bottom: 1px solid var(--clr-border);">
+  <div class="container">
+    <div class="text-center mb-4 fade-in-up">
+      <p class="text-primary fw-semi text-sm" style="letter-spacing:0.1em;text-transform:uppercase;">Why Intambwe</p>
+      <h2>Everything You Need in One Place</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in-up">
+        <div class="feature-icon"><i data-lucide="gift" style="width:24px;height:24px"></i></div>
+        <h3>100% Free Learning</h3>
+        <p>All courses are free and always will be. No paywalls, no subscriptions. Just learning.</p>
+      </div>
+      <div class="feature-card fade-in-up">
+        <div class="feature-icon"><i data-lucide="badge-check" style="width:24px;height:24px"></i></div>
+        <h3>Verified Skill Badges</h3>
+        <p>Badges are earned by passing quizzes — not just watching videos. Employers can trust them.</p>
+      </div>
+      <div class="feature-card fade-in-up">
+        <div class="feature-icon"><i data-lucide="map-pin" style="width:24px;height:24px"></i></div>
+        <h3>Rwanda-Focused</h3>
+        <p>Jobs and opportunities are from local employers who understand the Rwandan market.</p>
+      </div>
+      <div class="feature-card fade-in-up">
+        <div class="feature-icon"><i data-lucide="smartphone" style="width:24px;height:24px"></i></div>
+        <h3>Mobile-First Design</h3>
+        <p>Built to work beautifully on any phone, even on slower connections. No app download needed.</p>
+      </div>
+      <div class="feature-card fade-in-up">
+        <div class="feature-icon"><i data-lucide="target" style="width:24px;height:24px"></i></div>
+        <h3>One-Click Applications</h3>
+        <p>Your profile auto-fills applications. Find a job you like and apply in seconds.</p>
+      </div>
+      <div class="feature-card fade-in-up">
+        <div class="feature-icon"><i data-lucide="shield-check" style="width:24px;height:24px"></i></div>
+        <h3>Trusted Employers Only</h3>
+        <p>Every employer is verified by our admin team before they can post opportunities.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Courses -->
+<section class="section">
+  <div class="container">
+    <div class="flex-between mb-4 fade-in-up">
+      <div>
+        <p class="text-primary fw-semi text-sm" style="letter-spacing:0.1em;text-transform:uppercase;">Free Courses</p>
+        <h2>Start Learning Today</h2>
+      </div>
+      <a href="pages/courses.html" class="btn btn-outline">View All 8 Courses →</a>
+    </div>
+    <div class="courses-preview" id="preview-courses"></div>
+  </div>
+</section>
+
+<!-- Problem Statement / Why This Matters -->
+<section class="section" style="background: var(--clr-surface2); border-top: 1px solid var(--clr-border); border-bottom: 1px solid var(--clr-border);">
+  <div class="container">
+    <div class="grid-2 items-center gap-4 fade-in-up">
+      <div>
+        <p class="text-accent fw-semi text-sm" style="letter-spacing:0.1em;text-transform:uppercase;">The Problem We Solve</p>
+        <h2>Rwanda's Skills-to-Jobs Gap is Real</h2>
+        <p style="margin:1rem 0;">According to the National Institute of Statistics of Rwanda (NISR, 2026), youth unemployment stood at <strong style="color:var(--clr-accent)">14.7%</strong> in 2025 — higher than the adult rate of 10.8%.</p>
+        <p>Labour underutilization among youth reached <strong style="color:var(--clr-accent)">56.7%</strong>. Many young Rwandans have skills but no simple, trusted way to prove them to local employers.</p>
+        <p style="margin-top:1rem;"><strong style="color:var(--clr-primary-lt)">Intambwe Skills Hub is the bridge.</strong></p>
+      </div>
+      <div>
+        <div class="stat-card mb-2">
+          <div class="stat-num">14.7%</div>
+          <div class="stat-label">Youth unemployment rate in Rwanda (2025)</div>
+        </div>
+        <div class="stat-card mb-2">
+          <div class="stat-num">56.7%</div>
+          <div class="stat-label">Labour underutilization among youth</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">1 Platform</div>
+          <div class="stat-label">Combining learning, proof of skill, and local opportunities</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4 fade-in-up">
+      <p class="text-primary fw-semi text-sm" style="letter-spacing:0.1em;text-transform:uppercase;">Community Voices</p>
+      <h2>What Our Users Say</h2>
+    </div>
+    <div class="grid-3 fade-in-up">
+      <div class="testimonial-card">
+        <div class="flex items-center mb-3">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#1B6E44,#2a9d64);color:white">A</div>
+          <div>
+            <div class="fw-semi">Amina Uwimana</div>
+            <div class="text-sm text-muted">Student, University of Rwanda</div>
+          </div>
+        </div>
+        <p>"I earned 3 badges in one week. When I applied for an internship, the employer was impressed that my skills were verified. I got the job!"</p>
+        <div style="margin-top:0.75rem;color:var(--clr-accent);font-size:0.9rem;">★★★★★</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="flex items-center mb-3">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#F5A623,#C07D0B);color:white">J</div>
+          <div>
+            <div class="fw-semi">Jean-Claude Niyonzima</div>
+            <div class="text-sm text-muted">Employer, Kigali Digital Agency</div>
+          </div>
+        </div>
+        <p>"Finding skilled young people used to be hard. With Intambwe, I can see exactly what skills each candidate has proven. It saves so much time."</p>
+        <div style="margin-top:0.75rem;color:var(--clr-accent);font-size:0.9rem;">★★★★★</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="flex items-center mb-3">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#8E44AD,#BB8FCE);color:white">G</div>
+          <div>
+            <div class="fw-semi">Grace Mukeshimana</div>
+            <div class="text-sm text-muted">TVET Graduate, Kigali</div>
+          </div>
+        </div>
+        <p>"I didn't know where to start. Intambwe gave me free courses, and within a month I had a Digital Marketing badge and a part-time job!"</p>
+        <div style="margin-top:0.75rem;color:var(--clr-accent);font-size:0.9rem;">★★★★★</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section-sm">
+  <div class="container fade-in-up">
+    <div class="cta-section">
+      <div style="position:relative;z-index:1;">
+        <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:0.75rem;">Ready to Take Your First Step?</h2>
+        <p style="max-width:500px;margin:0 auto 2rem;font-size:1rem;">Join thousands of Rwandan youth who are learning skills, earning badges, and landing opportunities.</p>
+        <div class="flex-center gap-2 flex-wrap">
+          <a href="pages/auth.html?tab=register" class="btn btn-accent btn-lg">Create Free Account</a>
+          <a href="pages/auth.html?tab=register&role=employer" class="btn btn-outline btn-lg">Post an Opportunity</a>
+        </div>
+        <p class="text-sm text-muted mt-3">No credit card required · 100% free for students</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;">
+          <div class="logo-icon"><i data-lucide="sprout" style="width:20px;height:20px"></i></div>
+          Intambwe <span>Skills</span>
+        </div>
+        <p>A Learn, Prove, and Get Hired platform for Rwandan youth. Bridging skills and employment through technology.</p>
+        <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--clr-text-dim);">Built by IRIHOSE David · African Leadership University (ALU)</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="pages/courses.html">Browse Courses</a>
+        <a href="pages/badges.html">My Badges</a>
+        <a href="pages/opportunities.html">Opportunities</a>
+        <a href="pages/auth.html">Sign In</a>
+      </div>
+      <div class="footer-col">
+        <h4>For Employers</h4>
+        <a href="pages/auth.html?tab=register&role=employer">Register as Employer</a>
+        <a href="pages/employer-dashboard.html">Post Opportunity</a>
+        <a href="pages/employer-dashboard.html">View Applicants</a>
+      </div>
+      <div class="footer-col">
+        <h4>About</h4>
+        <a href="#why">Why Intambwe?</a>
+        <a href="#how">How It Works</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Contact Us</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Intambwe Skills Hub · All rights reserved</span>
+      <span>Made with pride in Rwanda</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="js/state.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/courses-data.js"></script>
+<script>
+  // Render nav
+  renderNav('home');
+
+  // Render preview courses (first 4)
+  const previewCourses = document.getElementById('preview-courses');
+  COURSES.slice(0, 4).forEach(course => {
+    const user = ISH.getCurrentUser();
+    const passed = user ? ISH.hasPassedCourse(user.id, course.id) : false;
+    previewCourses.innerHTML += `
+      <a href="pages/courses.html" class="preview-card" style="text-decoration:none">
+        <div class="preview-card-top" style="background:${course.bgGradient}">
+          ${course.icon}
+          ${passed ? '<span class="course-completed-badge">✓ Done</span>' : ''}
+        </div>
+        <div class="preview-card-body">
+          <div class="course-tags"><span class="tag ${course.tagColor}">${course.category}</span><span class="tag tag-green">${course.difficulty}</span></div>
+          <div class="course-title">${course.title}</div>
+          <div class="course-meta">
+            <span><i data-lucide="clock" style="width:14px;height:14px"></i> ${course.duration}</span>
+            <span><i data-lucide="file-text" style="width:14px;height:14px"></i> ${course.quizQuestions.length} questions</span>
+          </div>
+        </div>
+      </a>
+    `;
+  });
+
+  // Animated counters
+  function animateCounter(el, target, duration = 1800) {
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { el.textContent = target; clearInterval(timer); }
+      else el.textContent = Math.floor(start);
+    }, 16);
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.counter').forEach(el => {
+          animateCounter(el, parseInt(el.dataset.target));
+        });
+        obs.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+
+  const banner = document.querySelector('.stats-banner');
+  if (banner) obs.observe(banner);
+
+  lucide.createIcons();
+</script>
+
+</body>
+</html>
